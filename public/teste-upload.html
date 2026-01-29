@@ -65,6 +65,9 @@
       <label for="customer_email">Email</label>
       <input id="customer_email" type="email" placeholder="email@exemplo.com" />
 
+      <label for="customer_phone">Telefone</label>
+      <input id="customer_phone" type="text" placeholder="(11) 99999-9999" />
+
       <label for="comprovante">Comprovante</label>
       <input id="comprovante" type="file" accept="image/*,.pdf" />
 
@@ -90,6 +93,7 @@
         formData.append("customer_name", document.getElementById("customer_name").value || "Teste");
         formData.append("customer_cpf", document.getElementById("customer_cpf").value || "00000000000");
         formData.append("customer_email", document.getElementById("customer_email").value || "teste@exemplo.com");
+        formData.append("customer_phone", document.getElementById("customer_phone").value || "");
 
         result.textContent = "Enviando...";
 
