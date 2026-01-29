@@ -27,6 +27,15 @@ async function ensureComprovantesTable() {
   tableReady = true;
 }
 
+function csvEscape(value) {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") {
@@ -45,15 +54,36 @@ module.exports = async (req, res) => {
     }
 
     await ensureComprovantesTable();
-    const limit = Math.min(Number(req.query.limit || 50), 200);
+    const limit = Math.min(Number(req.query.limit || 500), 5000);
     const result = await db.query(
-      "SELECT id, created_at, transaction_id, customer_name, customer_cpf, customer_email, customer_phone, file_url, file_name, size_bytes, mimetype, status FROM comprovantes ORDER BY created_at DESC LIMIT $1",
+      "SELECT id, created_at, transaction_id, customer_name, customer_cpf, customer_email, customer_phone, status, file_url FROM comprovantes ORDER BY created_at DESC LIMIT $1",
       [limit],
     );
 
-    return res.status(200).json({ success: true, data: result.rows });
+    const header = [
+      "id",
+      "created_at",
+      "transaction_id",
+      "customer_name",
+      "customer_cpf",
+      "customer_email",
+      "customer_phone",
+      "status",
+      "file_url",
+    ];
+
+    const lines = [header.join(",")].concat(
+      result.rows.map((row) =>
+        header.map((key) => csvEscape(row[key])).join(","),
+      ),
+    );
+
+    const csv = lines.join("\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=comprovantes.csv");
+    return res.status(200).send(csv);
   } catch (error) {
-    console.error("[COMPROVANTES LIST] erro:", error);
+    console.error("[COMPROVANTES EXPORT] erro:", error);
     return res.status(500).json({ success: false, message: "Erro interno" });
   }
 };

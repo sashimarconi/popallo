@@ -18,6 +18,7 @@ async function ensureComprovantesTable() {
       "customer_name TEXT, " +
       "customer_cpf TEXT, " +
       "customer_email TEXT, " +
+      "customer_phone TEXT, " +
       "file_url TEXT, " +
       "file_name TEXT, " +
       "size_bytes INTEGER, " +
@@ -28,6 +29,7 @@ async function ensureComprovantesTable() {
     ")",
   );
   await db.query("ALTER TABLE comprovantes ADD COLUMN IF NOT EXISTS status TEXT");
+  await db.query("ALTER TABLE comprovantes ADD COLUMN IF NOT EXISTS customer_phone TEXT");
   comprovantesTableReady = true;
 }
 
@@ -93,13 +95,14 @@ module.exports = async (req, res) => {
     await ensureComprovantesTable();
     await db.query(
       "INSERT INTO comprovantes (" +
-        "transaction_id, customer_name, customer_cpf, customer_email, file_url, file_name, size_bytes, mimetype, status, user_agent, ip" +
-      ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+        "transaction_id, customer_name, customer_cpf, customer_email, customer_phone, file_url, file_name, size_bytes, mimetype, status, user_agent, ip" +
+      ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
       [
         getFieldValue(fields.transaction_id),
         getFieldValue(fields.customer_name),
         getFieldValue(fields.customer_cpf),
         getFieldValue(fields.customer_email),
+        getFieldValue(fields.customer_phone),
         blob.url,
         path.basename(blob.pathname),
         comprovante.size || 0,
