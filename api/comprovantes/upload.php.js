@@ -22,10 +22,12 @@ async function ensureComprovantesTable() {
       "file_name TEXT, " +
       "size_bytes INTEGER, " +
       "mimetype TEXT, " +
+      "status TEXT, " +
       "user_agent TEXT, " +
       "ip TEXT" +
     ")",
   );
+  await db.query("ALTER TABLE comprovantes ADD COLUMN IF NOT EXISTS status TEXT");
   comprovantesTableReady = true;
 }
 
@@ -91,8 +93,8 @@ module.exports = async (req, res) => {
     await ensureComprovantesTable();
     await db.query(
       "INSERT INTO comprovantes (" +
-        "transaction_id, customer_name, customer_cpf, customer_email, file_url, file_name, size_bytes, mimetype, user_agent, ip" +
-      ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+        "transaction_id, customer_name, customer_cpf, customer_email, file_url, file_name, size_bytes, mimetype, status, user_agent, ip" +
+      ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
       [
         getFieldValue(fields.transaction_id),
         getFieldValue(fields.customer_name),
@@ -102,6 +104,7 @@ module.exports = async (req, res) => {
         path.basename(blob.pathname),
         comprovante.size || 0,
         comprovante.mimetype || comprovante.type || "",
+        "pending_review",
         req.headers["user-agent"] || "",
         req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
       ],

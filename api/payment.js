@@ -27,6 +27,7 @@ async function ensureLeadsTable() {
       "ip TEXT" +
     ")",
   );
+  await db.query("ALTER TABLE leads ADD COLUMN IF NOT EXISTS status TEXT");
   leadsTableReady = true;
 }
 

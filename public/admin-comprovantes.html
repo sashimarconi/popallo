@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comprovantes - Admin</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        margin: 0;
+        padding: 24px;
+      }
+      h1 {
+        margin-bottom: 12px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      input {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        background: #111827;
+        color: #e2e8f0;
+      }
+      button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        background: #22c55e;
+        color: #0f172a;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        background: #111827;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #1f2937;
+        text-align: left;
+      }
+      th {
+        background: #1f2937;
+      }
+      a {
+        color: #38bdf8;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #334155;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Comprovantes</h1>
+    <div class="controls">
+      <input id="token" type="text" placeholder="ADMIN_TOKEN (se tiver)" />
+      <input id="limit" type="number" value="50" min="1" max="200" />
+      <button id="load">Carregar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Data</th>
+          <th>Cliente</th>
+          <th>CPF</th>
+          <th>Email</th>
+          <th>Transação</th>
+          <th>Status</th>
+          <th>Arquivo</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <script>
+      const rows = document.getElementById("rows");
+      const tokenInput = document.getElementById("token");
+      const limitInput = document.getElementById("limit");
+
+      async function loadData() {
+        rows.innerHTML = "<tr><td colspan='8'>Carregando...</td></tr>";
+        const token = tokenInput.value.trim();
+        const limit = Number(limitInput.value || 50);
+
+        const url = new URL("/api/comprovantes/list", window.location.origin);
+        url.searchParams.set("limit", String(limit));
+        if (token) url.searchParams.set("token", token);
+
+        const response = await fetch(url.toString(), {
+          headers: token ? { "x-admin-token": token } : {},
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          rows.innerHTML = `<tr><td colspan='8'>Erro: ${data.message || "não foi possível carregar"}</td></tr>`;
+          return;
+        }
+
+        rows.innerHTML = data.data
+          .map((item) => {
+            const date = new Date(item.created_at).toLocaleString("pt-BR");
+            return `
+              <tr>
+                <td>${item.id}</td>
+                <td>${date}</td>
+                <td>${item.customer_name || ""}</td>
+                <td>${item.customer_cpf || ""}</td>
+                <td>${item.customer_email || ""}</td>
+                <td>${item.transaction_id || ""}</td>
+                <td><span class="tag">${item.status || ""}</span></td>
+                <td><a href="${item.file_url}" target="_blank">${item.file_name || "abrir"}</a></td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      document.getElementById("load").addEventListener("click", loadData);
+    </script>
+  </body>
+</html>
