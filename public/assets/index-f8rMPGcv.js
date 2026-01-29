@@ -18913,11 +18913,24 @@ function g3() {
             className: "w-full",
             children: [
               l.jsxs("div", {
-                className:
-                  "bg-white rounded-2xl shadow-lg p-6 w-full border border-gray-100",
+                className: "flex items-center gap-3 mb-4",
                 children: [
-                  l.jsx("h3", {
-                    className: "text-left w-full text-sm text-gray-600 mb-4",
+                  l.jsx("div", {
+                    className:
+                      "flex items-center justify-center w-6 h-6 rounded-full bg-[#1351B4] text-white text-sm font-medium",
+                    children: D.number,
+                  }),
+                  l.jsx("p", {
+                    className: "font-semibold text-base",
+                    children: "Programa CNH do Brasil",
+                  }),
+                ],
+              }),
+              l.jsxs("div", {
+                className: "bg-white rounded-2xl shadow-md p-6 w-full",
+                children: [
+                  l.jsx("p", {
+                    className: "text-sm text-gray-600 mb-3",
                     children:
                       "Confirme seus dados para o cadastro no Programa CNH do Brasil",
                   }),
@@ -18940,7 +18953,8 @@ function g3() {
                           ],
                         }),
                         l.jsxs("div", {
-                          className: "space-y-3",
+                          className:
+                            "space-y-3 bg-gray-50 border-l-4 border-gray-300 p-4 rounded-lg",
                           children: [
                         t === "name" &&
                           b &&
@@ -18965,7 +18979,7 @@ function g3() {
                             l.jsx(
                               "div",
                               {
-                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer ${o === R ? "bg-[#1351B4] bg-opacity-10 border-2 border-[#1351B4]" : "bg-gray-50 hover:bg-gray-100"}`,
+                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-gray-100 hover:bg-gray-50"}`,
                                 onClick: () => {
                                   (i(R), s(null));
                                 },
@@ -18985,7 +18999,7 @@ function g3() {
                             l.jsx(
                               "div",
                               {
-                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer ${o === R ? "bg-[#1351B4] bg-opacity-10 border-2 border-[#1351B4]" : "bg-gray-50 hover:bg-gray-100"}`,
+                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-gray-100 hover:bg-gray-50"}`,
                                 onClick: () => {
                                   (i(R), s(null));
                                 },
@@ -19008,7 +19022,7 @@ function g3() {
                                 onChange: U,
                                 placeholder: "Digite seu email",
                                 className:
-                                  "w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg",
+                                  "w-full p-3 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg bg-white",
                               }),
                               y &&
                                 l.jsx("div", {
@@ -19036,7 +19050,7 @@ function g3() {
                                 onChange: $,
                                 placeholder: "(11) 99999-9999",
                                 className:
-                                  "w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg",
+                                  "w-full p-3 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg bg-white",
                               }),
                           ],
                         }),
@@ -19060,10 +19074,9 @@ function g3() {
                         "span",
                         {
                           className:
-                            "h-2 w-2 rounded-full " +
                             (L + 1 === D.number
-                              ? "bg-[#1351B4]"
-                              : "bg-gray-200"),
+                              ? "h-2 w-6 rounded-full bg-[#1351B4]"
+                              : "h-2 w-2 rounded-full bg-gray-200"),
                         },
                         L,
                       ),
