@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste do Gateway PIX</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 24px;
+        background: #f6f7fb;
+        color: #1f2937;
+      }
+      .card {
+        max-width: 640px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-top: 12px;
+      }
+      input {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px 10px;
+        border: 1px solid #cbd5f5;
+        border-radius: 6px;
+      }
+      button {
+        margin-top: 16px;
+        padding: 10px 14px;
+        background: #1351b4;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      pre {
+        margin-top: 16px;
+        background: #111827;
+        color: #e5e7eb;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .qr {
+        margin-top: 12px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Teste do Gateway PIX</h2>
+      <p>Gera um PIX direto pelo endpoint da API.</p>
+
+      <label for="nome">Nome</label>
+      <input id="nome" type="text" placeholder="Nome completo" value="Teste Gateway" />
+
+      <div class="row">
+        <div>
+          <label for="cpf">CPF</label>
+          <input id="cpf" type="text" placeholder="00000000000" value="07317831905" />
+        </div>
+        <div>
+          <label for="phone">Telefone</label>
+          <input id="phone" type="text" placeholder="(11) 99999-9999" value="(44) 92002-8281" />
+        </div>
+      </div>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="email@exemplo.com" value="teste@exemplo.com" />
+
+      <div class="row">
+        <div>
+          <label for="amount">Valor (ex.: 64.73)</label>
+          <input id="amount" type="text" value="64.73" />
+        </div>
+        <div>
+          <label for="title">Título</label>
+          <input id="title" type="text" value="Taxa de Adesão" />
+        </div>
+      </div>
+
+      <button id="send">Gerar PIX</button>
+
+      <div class="qr" id="qr"></div>
+      <pre id="result">Aguardando envio...</pre>
+    </div>
+
+    <script>
+      const button = document.getElementById("send");
+      const result = document.getElementById("result");
+      const qr = document.getElementById("qr");
+
+      button.addEventListener("click", async () => {
+        const payload = {
+          cpf: document.getElementById("cpf").value,
+          nome: document.getElementById("nome").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("phone").value,
+          amount: document.getElementById("amount").value,
+          title: document.getElementById("title").value,
+        };
+
+        result.textContent = "Enviando...";
+        qr.style.display = "none";
+        qr.innerHTML = "";
+
+        try {
+          const response = await fetch("/api/payment/payment.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          result.textContent = JSON.stringify(data, null, 2);
+
+          if (data.qr_code && typeof data.qr_code === "string" && data.qr_code.startsWith("data:image")) {
+            const img = document.createElement("img");
+            img.src = data.qr_code;
+            img.alt = "QR Code";
+            img.style.maxWidth = "220px";
+            qr.appendChild(img);
+            qr.style.display = "block";
+          }
+        } catch (error) {
+          result.textContent = `Erro: ${error.message}`;
+        }
+      });
+    </script>
+  </body>
+</html>
