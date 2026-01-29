@@ -29917,7 +29917,7 @@ function EE() {
           children: l.jsx("div", {
             className: "w-full",
             children: l.jsxs("div", {
-              className: "bg-white rounded-2xl shadow-lg p-6",
+              className: "w-full",
               children: [
                 l.jsxs(ou.div, {
                   className: "flex items-center gap-3 mb-3",
@@ -29945,99 +29945,104 @@ function EE() {
                   ],
                 }),
                 l.jsxs("div", {
-                  className: "space-y-3 flex flex-col items-center",
+                  className: "bg-white rounded-2xl shadow-md p-6",
                   children: [
-                    l.jsx(Tg, {
-                      mode: "wait",
-                      children: l.jsx(
-                        ou.div,
-                        {
-                          initial: {
-                            opacity: 0,
-                            x: 50,
-                          },
-                          animate: {
-                            opacity: 1,
-                            x: 0,
-                          },
-                          exit: {
-                            opacity: 0,
-                            x: -50,
-                          },
-                          transition: {
-                            duration: 0.5,
-                          },
-                          className: "flex justify-center mb-3 w-full",
-                          children: l.jsx("img", {
-                            src: Jr[e].image,
-                            alt: Jr[e].title,
-                            className:
-                              "w-full object-contain rounded-[10px] shadow-md",
-                            style: {
-                              maxHeight: "220px",
-                              maxWidth: "320px",
+                    l.jsxs("div", {
+                      className: "space-y-3 flex flex-col items-center",
+                      children: [
+                        l.jsx(Tg, {
+                          mode: "wait",
+                          children: l.jsx(
+                            ou.div,
+                            {
+                              initial: {
+                                opacity: 0,
+                                x: 50,
+                              },
+                              animate: {
+                                opacity: 1,
+                                x: 0,
+                              },
+                              exit: {
+                                opacity: 0,
+                                x: -50,
+                              },
+                              transition: {
+                                duration: 0.5,
+                              },
+                              className: "flex justify-center mb-3 w-full",
+                              children: l.jsx("img", {
+                                src: Jr[e].image,
+                                alt: Jr[e].title,
+                                className:
+                                  "w-full object-contain rounded-[10px]",
+                                style: {
+                                  maxHeight: "240px",
+                                },
+                              }),
                             },
-                          }),
-                        },
-                        e,
-                      ),
-                    }),
-                    l.jsx(Tg, {
-                      mode: "wait",
-                      children: l.jsx(
-                        ou.div,
-                        {
-                          initial: {
-                            opacity: 0,
-                            y: 20,
-                          },
-                          animate: {
-                            opacity: 1,
-                            y: 0,
-                          },
-                          exit: {
-                            opacity: 0,
-                            y: -20,
-                          },
-                          transition: {
-                            duration: 0.5,
-                          },
-                          className:
-                            "bg-gray-50 border-l-4 border-blue-100 p-4 rounded-lg w-full",
-                          children: l.jsx("p", {
-                            className:
-                              "text-gray-700 leading-relaxed text-base",
-                            children: Jr[e].content,
-                          }),
-                        },
-                        e,
-                      ),
-                    }),
-                    l.jsx("div", {
-                      className: "flex items-center justify-center gap-2 mt-2",
-                      children: Jr.map((c, u) =>
-                        l.jsx(
-                          "span",
-                          {
-                            className:
-                              "h-2 w-2 rounded-full " +
-                              (u === e ? "bg-[#1351B4]" : "bg-gray-200"),
-                          },
-                          u,
-                        ),
-                      ),
-                    }),
-                    l.jsx("div", {
-                      className:
-                        "mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
-                      children: l.jsx("div", {
-                        className: "h-full bg-[#1351B4] rounded-full",
-                        style: {
-                          width: `${((e + 1) / Jr.length) * 100}%`,
-                        },
-                      }),
+                            e,
+                          ),
+                        }),
+                        l.jsx(Tg, {
+                          mode: "wait",
+                          children: l.jsx(
+                            ou.div,
+                            {
+                              initial: {
+                                opacity: 0,
+                                y: 20,
+                              },
+                              animate: {
+                                opacity: 1,
+                                y: 0,
+                              },
+                              exit: {
+                                opacity: 0,
+                                y: -20,
+                              },
+                              transition: {
+                                duration: 0.5,
+                              },
+                              className:
+                                "bg-gray-50 border-l-4 border-blue-100 p-4 rounded-lg w-full",
+                              children: l.jsx("p", {
+                                className:
+                                  "text-gray-700 leading-relaxed text-base",
+                                children: Jr[e].content,
+                              }),
+                            },
+                            e,
+                          ),
+                        }),
+                      ],
                     }),
                   ],
+                }),
+                l.jsx("div", {
+                  className: "flex items-center justify-center gap-2 mt-6",
+                  children: Jr.map((c, u) =>
+                    l.jsx(
+                      "span",
+                      {
+                        className:
+                          u === e
+                            ? "h-2 w-6 rounded-full bg-[#1351B4]"
+                            : "h-2 w-2 rounded-full bg-gray-200",
+                      },
+                      u,
+                    ),
+                  ),
+                }),
+                l.jsx("div", {
+                  className:
+                    "mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
+                  children: l.jsx("div", {
+                    className: "h-full bg-[#1351B4] rounded-full",
+                    style: {
+                      width: `${((e + 1) / Jr.length) * 100}%`,
+                    },
+                  }),
                 }),
                 l.jsx("div", {
                   className: "flex justify-center mt-6",
