@@ -3,7 +3,7 @@
 
 const db = require("./_db");
 
-const BASE_URL = process.env.SEALPAY_BASE_URL || "https://abacate-5eo1.onrender.com";
+const BASE_URL = process.env.FREEPAY_BASE_URL || "https://api.freepaybrasil.com";
 
 let leadsTableReady = false;
 
@@ -69,12 +69,21 @@ async function handlePaymentRequest(req, res) {
   }
 
   try {
-    const API_KEY = process.env.SEALPAY_API_KEY;
+    const FREEPAY_USERNAME = process.env.FREEPAY_USERNAME;
+    const FREEPAY_PASSWORD = process.env.FREEPAY_PASSWORD;
+    const FREEPAY_POSTBACK_URL = process.env.FREEPAY_POSTBACK_URL;
 
-    if (!API_KEY) {
-      return res.status(500).json({ 
-        success: false, 
-        message: "Chave da SealPay não configurada" 
+    if (!FREEPAY_USERNAME || !FREEPAY_PASSWORD) {
+      return res.status(500).json({
+        success: false,
+        message: "Credenciais da FreePay não configuradas",
+      });
+    }
+
+    if (!FREEPAY_POSTBACK_URL) {
+      return res.status(500).json({
+        success: false,
+        message: "FREEPAY_POSTBACK_URL não configurada",
       });
     }
 
@@ -159,14 +168,29 @@ async function handlePaymentRequest(req, res) {
 
     const payload = {
       amount: amountCents,
-      description: FIXED_TITLE,
-      customer,
-      tracking,
-      api_key: API_KEY,
-      fbp: bodyData.fbp || "",
-      fbc: bodyData.fbc || "",
-      user_agent: bodyData.user_agent || req.headers["user-agent"] || "",
+      payment_method: "pix",
+      postback_url: FREEPAY_POSTBACK_URL,
+      customer: {
+        name: customer.name,
+        email: customer.email,
+        phone: customer.cellphone,
+        document: {
+          type: "cpf",
+          number: customer.taxId,
+        },
+      },
+      items: [
+        {
+          title: FIXED_TITLE,
+          unit_price: amountCents,
+          quantity: 1,
+          tangible: false,
+          external_ref: "taxa_adesao",
+        },
+      ],
     };
+
+    const userAgent = bodyData.user_agent || req.headers["user-agent"] || "";
 
     await saveLead({
       timestamp: new Date().toISOString(),
@@ -178,16 +202,19 @@ async function handlePaymentRequest(req, res) {
       amount_cents: amountCents,
       title: FIXED_TITLE,
       tracking: JSON.stringify(tracking || {}),
-      user_agent: payload.user_agent || "",
+      user_agent: userAgent,
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
     });
 
-    console.log("[PAYMENT] Enviando para SealPay...");
+    console.log("[PAYMENT] Enviando para FreePay...");
 
-    const resp = await fetch(`${BASE_URL}/create-pix`, {
+    const authHeader = Buffer.from(`${FREEPAY_USERNAME}:${FREEPAY_PASSWORD}`).toString("base64");
+    const resp = await fetch(`${BASE_URL}/v1/payment-transaction/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Basic ${authHeader}`,
       },
       body: JSON.stringify(payload),
     });
@@ -195,20 +222,22 @@ async function handlePaymentRequest(req, res) {
     const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error("[PAYMENT] Erro SealPay:", resp.status, data);
+      console.error("[PAYMENT] Erro FreePay:", resp.status, data);
       return res.status(502).json({
         success: false,
         message: data?.error || "Falha ao criar PIX",
-        detalhes: data?.detalhes,
+        detalhes: data?.details || data?.detalhes,
       });
     }
 
-    const tx = data?.txid || data?.id;
-    const pixText = data?.pix_code || data?.pixCode || "";
-    const pixQr = data?.pix_qr_code || data?.pixQrCode || "";
+    const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
+    const tx = txData?.id || txData?.transaction_id || txData?.txid;
+    const pixInfo = Array.isArray(txData?.pix) ? txData.pix[0] : txData?.pix || {};
+    const pixText = pixInfo?.qr_code || pixInfo?.e2e || txData?.pix_code || "";
+    const pixQr = pixInfo?.url || "";
     const pixQrWithPrefix = pixQr && pixQr.startsWith("data:image")
       ? pixQr
-      : (pixQr ? `data:image/png;base64,${pixQr}` : "");
+      : "";
 
     if (!tx || !pixText) {
       return res.status(502).json({
@@ -224,18 +253,18 @@ async function handlePaymentRequest(req, res) {
       nome: validNome || "",
       email: validEmail || "",
       phone: validPhone || "",
-      amount_cents: data?.amount || amountCents,
+      amount_cents: txData?.amount || amountCents,
       title: FIXED_TITLE,
       transaction_id: String(tx),
-      status: String(data?.status || "PENDING"),
+      status: String(txData?.status || "PENDING"),
     });
 
     return res.status(200).json({
       success: true,
       transaction_id: String(tx),
       pix_code: String(pixText),
-      amount: data?.amount || amountCents,
-      status: String(data?.status || "PENDING"),
+      amount: txData?.amount || amountCents,
+      status: String(txData?.status || "PENDING"),
       qr_code: pixQrWithPrefix || String(pixText),
       pix_qr_code: pixQrWithPrefix,
     });
