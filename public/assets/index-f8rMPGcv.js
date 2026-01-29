@@ -30042,12 +30042,20 @@ function EE() {
                         ),
                       }),
                       l.jsx("div", {
-                        className:
-                          "mt-3 h-[4px] w-full bg-gray-300 rounded-full overflow-hidden",
+                        style: {
+                          marginTop: "8px",
+                          height: "4px",
+                          width: "100%",
+                          backgroundColor: "#D1D5DB",
+                          borderRadius: "9999px",
+                          overflow: "hidden",
+                        },
                         children: l.jsx("div", {
-                          className: "h-full bg-[#1351B4] rounded-full",
                           style: {
+                            height: "100%",
                             width: `${((e + 1) / Jr.length) * 100}%`,
+                            backgroundColor: "#1351B4",
+                            borderRadius: "9999px",
                           },
                         }),
                       }),
