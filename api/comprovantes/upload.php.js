@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
     const blobName = `comprovantes/${timestamp}_${safeName}`;
 
     const blob = await put(blobName, fileBuffer, {
-      access: "private",
+      access: "public",
       contentType: comprovante.mimetype || comprovante.type || "application/octet-stream",
     });
 
