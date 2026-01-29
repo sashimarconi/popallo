@@ -17982,9 +17982,7 @@ function d3() {
         h.id = "govbr-loading";
         h.innerHTML =
           '<div class="govbr-loading-wrap">'
-          + '<div class="govbr-loading-top">GOVERNO FEDERAL</div>'
           + '<img class="govbr-loading-logo-img" src="https://govbr.beneficiofederal.org/gov-brasil-logo.svg" alt="Brasil" />'
-          + '<div class="govbr-loading-sub">UNIÃO E RECONSTRUÇÃO</div>'
           + '<div class="govbr-loading-dots"><span></span><span></span><span></span><span></span><span></span></div>'
           + '<div class="govbr-loading-title">Verificando identidade...</div>'
           + `<div class="govbr-loading-name">${f || ""}</div>`
@@ -17998,9 +17996,7 @@ function d3() {
         w.textContent =
           '#govbr-loading{position:fixed;inset:0;background:#ffffff;display:flex;align-items:center;justify-content:center;z-index:9999}'
           + '.govbr-loading-wrap{width:320px;text-align:center;padding:24px 16px}'
-          + '.govbr-loading-top{font-weight:700;letter-spacing:.18em;font-size:12px;color:#111827;margin-bottom:12px}'
           + '.govbr-loading-logo-img{width:240px;max-width:90%;height:auto;margin:0 auto 8px;display:block}'
-          + '.govbr-loading-sub{font-weight:600;font-size:10px;letter-spacing:.18em;color:#6b7280;margin-bottom:10px}'
           + '.govbr-loading-dots{display:flex;justify-content:center;gap:8px;margin:10px 0}'
           + '.govbr-loading-dots span{width:8px;height:8px;border-radius:999px;background:#e5e7eb;animation:govdot 1s infinite}'
           + '.govbr-loading-dots span:nth-child(2){animation-delay:.1s;background:#fde68a}'
