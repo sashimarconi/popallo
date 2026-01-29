@@ -30043,7 +30043,7 @@ function EE() {
                       }),
                       l.jsx("div", {
                         className:
-                          "mt-3 h-[3px] w-full bg-gray-200 rounded-full overflow-hidden",
+                          "mt-3 h-[4px] w-full bg-gray-300 rounded-full overflow-hidden",
                         children: l.jsx("div", {
                           className: "h-full bg-[#1351B4] rounded-full",
                           style: {
