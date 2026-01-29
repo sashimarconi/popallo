@@ -30042,9 +30042,6 @@ function EE() {
                         ),
                       }),
                       l.jsx("div", {
-                        className: "mt-2 h-[2px] w-full bg-gray-200",
-                      }),
-                      l.jsx("div", {
                         className:
                           "mt-4 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
                         children: l.jsx("div", {
