@@ -29843,6 +29843,7 @@ function EE() {
             }, 500)));
     };
   return l.jsxs("div", {
+    className: "min-h-screen bg-gray-50",
     children: [
       l.jsx(rt, {}),
       l.jsx("div", {
@@ -29855,16 +29856,17 @@ function EE() {
           id: "main-signin",
           style: {
             width: "100%",
-            maxWidth: "1200px",
+            maxWidth: "480px",
             margin: "0 auto",
-            padding: "2rem",
+            padding: "1.25rem",
           },
           children: l.jsx("div", {
             className: "w-full",
             children: l.jsxs("div", {
+              className: "bg-white rounded-2xl shadow-lg p-6",
               children: [
                 l.jsxs(ou.div, {
-                  className: "flex items-center gap-3 mb-4",
+                  className: "flex items-center gap-3 mb-3",
                   initial: {
                     opacity: 0,
                     y: 20,
@@ -29911,14 +29913,15 @@ function EE() {
                           transition: {
                             duration: 0.5,
                           },
-                          className: "flex justify-center mb-4",
+                          className: "flex justify-center mb-3 w-full",
                           children: l.jsx("img", {
                             src: Jr[e].image,
                             alt: Jr[e].title,
                             className:
-                              "w-[380px] h-auto md:w-[480px] object-contain rounded-[10px] shadow-lg",
+                              "w-full object-contain rounded-[10px] shadow-md",
                             style: {
-                              maxHeight: "400px",
+                              maxHeight: "220px",
+                              maxWidth: "320px",
                             },
                           }),
                         },
@@ -29946,7 +29949,7 @@ function EE() {
                             duration: 0.5,
                           },
                           className:
-                            "bg-gray-50 p-8 rounded-md w-[380px] md:w-[480px]",
+                            "bg-gray-50 border-l-4 border-blue-100 p-4 rounded-lg w-full",
                           children: l.jsx("p", {
                             className:
                               "text-gray-700 leading-relaxed text-base",
@@ -29955,6 +29958,30 @@ function EE() {
                         },
                         e,
                       ),
+                    }),
+                    l.jsx("div", {
+                      className: "flex items-center justify-center gap-2 mt-2",
+                      children: Jr.map((c, u) =>
+                        l.jsx(
+                          "span",
+                          {
+                            className:
+                              "h-2 w-2 rounded-full " +
+                              (u === e ? "bg-[#1351B4]" : "bg-gray-200"),
+                          },
+                          u,
+                        ),
+                      ),
+                    }),
+                    l.jsx("div", {
+                      className:
+                        "mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
+                      children: l.jsx("div", {
+                        className: "h-full bg-[#1351B4] rounded-full",
+                        style: {
+                          width: `${((e + 1) / Jr.length) * 100}%`,
+                        },
+                      }),
                     }),
                   ],
                 }),
@@ -29965,7 +29992,7 @@ function EE() {
                     onClick: a,
                     disabled: n !== "idle",
                     className:
-                      "button-continuar flex items-center justify-center gap-2 min-w-[160px]",
+                      "button-continuar flex items-center justify-center gap-2 w-full h-12",
                     children: [
                       n === "loading" &&
                         l.jsx(vt, {
@@ -29984,6 +30011,10 @@ function EE() {
                             : "Avançar",
                     ],
                   }),
+                }),
+                l.jsx("p", {
+                  className: "text-center text-xs text-gray-500 mt-2",
+                  children: `Passo ${e + 1} de ${Jr.length}`,
                 }),
               ],
             }),
