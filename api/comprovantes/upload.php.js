@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
-const formidable = require("formidable");
+const { IncomingForm } = require("formidable");
 const { put } = require("@vercel/blob");
 const db = require("../_db");
 
@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ success: false, error: "Postgres não configurado" });
     }
 
-    const form = formidable({
+    const form = new IncomingForm({
       multiples: false,
       maxFileSize: MAX_FILE_SIZE,
       keepExtensions: true,
