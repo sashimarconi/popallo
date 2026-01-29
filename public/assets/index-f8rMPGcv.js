@@ -18910,34 +18910,38 @@ function g3() {
             padding: "1.25rem",
           },
           children: l.jsxs("div", {
-            className: "bg-white rounded-2xl shadow-lg p-6 w-full",
+            className: "w-full",
             children: [
-              l.jsx("h3", {
-                className: "text-center w-full text-lg font-bold mb-6",
-                children:
-                  "Confirme seus dados para o cadastro no Programa CNH do Brasil",
-              }),
-              l.jsx("div", {
-                className: "w-full",
-                children: l.jsxs("div", {
-                  children: [
-                    l.jsxs("div", {
-                      className: "flex items-center gap-3 mb-4",
+              l.jsxs("div", {
+                className:
+                  "bg-white rounded-2xl shadow-lg p-6 w-full border border-gray-100",
+                children: [
+                  l.jsx("h3", {
+                    className: "text-left w-full text-sm text-gray-600 mb-4",
+                    children:
+                      "Confirme seus dados para o cadastro no Programa CNH do Brasil",
+                  }),
+                  l.jsx("div", {
+                    className: "w-full",
+                    children: l.jsxs("div", {
                       children: [
-                        l.jsx("div", {
-                          className:
-                            "flex items-center justify-center w-6 h-6 rounded-full bg-[#1351B4] text-white text-sm font-medium",
-                          children: D.number,
+                        l.jsxs("div", {
+                          className: "flex items-center gap-3 mb-4",
+                          children: [
+                            l.jsx("div", {
+                              className:
+                                "flex items-center justify-center w-6 h-6 rounded-full bg-[#1351B4] text-white text-sm font-medium",
+                              children: D.number,
+                            }),
+                            l.jsx("p", {
+                              className: "font-semibold text-base",
+                              children: D.title,
+                            }),
+                          ],
                         }),
-                        l.jsx("p", {
-                          className: "font-semibold text-base",
-                          children: D.title,
-                        }),
-                      ],
-                    }),
-                    l.jsxs("div", {
-                      className: "space-y-3",
-                      children: [
+                        l.jsxs("div", {
+                          className: "space-y-3",
+                          children: [
                         t === "name" &&
                           b &&
                           l.jsx("input", {
@@ -19025,79 +19029,86 @@ function g3() {
                                 }),
                             ],
                           }),
-                        t === "phone" &&
-                          l.jsx("input", {
-                            type: "tel",
-                            value: f,
-                            onChange: $,
-                            placeholder: "(11) 99999-9999",
-                            className:
-                              "w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg",
+                            t === "phone" &&
+                              l.jsx("input", {
+                                type: "tel",
+                                value: f,
+                                onChange: $,
+                                placeholder: "(11) 99999-9999",
+                                className:
+                                  "w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1351B4] text-lg",
+                              }),
+                          ],
+                        }),
+                        r &&
+                          l.jsx("p", {
+                            className: "text-red-500 mt-4",
+                            children: r,
                           }),
                       ],
                     }),
-                    r &&
-                      l.jsx("p", {
-                        className: "text-red-500 mt-4",
-                        children: r,
-                      }),
-                    l.jsx("div", {
-                      className: "flex justify-center mt-6",
-                      children: l.jsxs("button", {
-                        type: "button",
-                        onClick: re,
-                        disabled: a !== "idle",
-                        className:
-                          "button-continuar flex items-center justify-center gap-2 w-full h-12",
-                        children: [
-                          a === "loading" &&
-                            l.jsx(vt, {
-                              className: "h-4 w-4 animate-spin",
-                            }),
-                          a === "success" &&
-                            l.jsx(It, {
-                              className: "h-4 w-4",
-                            }),
-                          a === "loading"
-                            ? "Verificando"
-                            : a === "success"
-                              ? "Verificado"
-                              : "Confirmar",
-                        ],
-                      }),
-                    }),
-                    l.jsx("div", {
-                      className: "flex items-center justify-center gap-2 mt-4",
-                      children: Array.from({ length: Y }).map((R, L) =>
-                        l.jsx(
-                          "span",
-                          {
-                            className:
-                              "h-2 w-2 rounded-full " +
-                              (L + 1 === D.number
-                                ? "bg-[#1351B4]"
-                                : "bg-gray-200"),
-                          },
-                          L,
-                        ),
-                      ),
-                    }),
-                    l.jsx("div", {
-                      className:
-                        "mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
-                      children: l.jsx("div", {
-                        className: "h-full bg-[#1351B4] rounded-full",
-                        style: {
-                          width: `${(D.number / Y) * 100}%`,
+                  }),
+                ],
+              }),
+              l.jsxs("div", {
+                className: "mt-6 w-full",
+                children: [
+                  l.jsx("div", {
+                    className: "flex items-center justify-center gap-2",
+                    children: Array.from({ length: Y }).map((R, L) =>
+                      l.jsx(
+                        "span",
+                        {
+                          className:
+                            "h-2 w-2 rounded-full " +
+                            (L + 1 === D.number
+                              ? "bg-[#1351B4]"
+                              : "bg-gray-200"),
                         },
-                      }),
+                        L,
+                      ),
+                    ),
+                  }),
+                  l.jsx("div", {
+                    className:
+                      "mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden",
+                    children: l.jsx("div", {
+                      className: "h-full bg-[#1351B4] rounded-full",
+                      style: {
+                        width: `${(D.number / Y) * 100}%`,
+                      },
                     }),
-                    l.jsx("p", {
-                      className: "text-center text-xs text-gray-500 mt-2",
-                      children: `Passo ${D.number} de ${Y}`,
+                  }),
+                  l.jsx("div", {
+                    className: "flex justify-center mt-4",
+                    children: l.jsxs("button", {
+                      type: "button",
+                      onClick: re,
+                      disabled: a !== "idle",
+                      className:
+                        "button-continuar flex items-center justify-center gap-2 w-full h-12",
+                      children: [
+                        a === "loading" &&
+                          l.jsx(vt, {
+                            className: "h-4 w-4 animate-spin",
+                          }),
+                        a === "success" &&
+                          l.jsx(It, {
+                            className: "h-4 w-4",
+                          }),
+                        a === "loading"
+                          ? "Verificando"
+                          : a === "success"
+                            ? "Verificado"
+                            : "Confirmar",
+                      ],
                     }),
-                  ],
-                }),
+                  }),
+                  l.jsx("p", {
+                    className: "text-center text-xs text-gray-500 mt-2",
+                    children: `Passo ${D.number} de ${Y}`,
+                  }),
+                ],
               }),
             ],
           }),
