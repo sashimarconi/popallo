@@ -30024,7 +30024,7 @@ function EE() {
                   className:
                     "fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 z-20",
                   children: l.jsxs("div", {
-                    className: "max-w-[480px] mx-auto px-5 pt-4 pb-6",
+                    className: "max-w-[480px] mx-auto px-5 pt-3 pb-3",
                     children: [
                       l.jsx("div", {
                         className: "flex items-center justify-center gap-2",
@@ -30091,7 +30091,7 @@ function EE() {
                         }),
                       }),
                       l.jsx("p", {
-                        className: "text-center text-xs text-gray-500 mt-2",
+                        className: "text-center text-xs text-gray-500 mt-1",
                         children: `Passo ${e + 1} de ${Jr.length}`,
                       }),
                     ],
