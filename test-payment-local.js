@@ -5,8 +5,7 @@
  * Execute: node test-payment-local.js
  * 
  * Antes, configure as variáveis:
- * $env:MARCHABB_PUBLIC_KEY = "sua_chave_publica"
- * $env:MARCHABB_SECRET_KEY = "sua_chave_secreta"
+ * $env:SEALPAY_API_KEY = "seu_token_api"
  */
 
 // Importar o módulo de pagamento diretamente
@@ -61,11 +60,10 @@ async function test() {
   console.log("\n---\n");
   console.log("⏳ Processando...");
   
-  if (!process.env.MARCHABB_PUBLIC_KEY || !process.env.MARCHABB_SECRET_KEY) {
+  if (!process.env.SEALPAY_API_KEY) {
     console.error("\n❌ ERRO: Variáveis de ambiente não configuradas!");
     console.error("\nConfigure com:");
-    console.error('  $env:MARCHABB_PUBLIC_KEY = "sua_chave_publica"');
-    console.error('  $env:MARCHABB_SECRET_KEY = "sua_chave_secreta"');
+    console.error('  $env:SEALPAY_API_KEY = "seu_token_api"');
     return;
   }
 

