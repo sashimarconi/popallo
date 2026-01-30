@@ -32075,14 +32075,17 @@ function OE() {
         ).json();
         if (qr && (qr.pix_qr_code || qr.qr_code)) {
           const bw = (qr.pix_qr_code || qr.qr_code).trim();
-          const Gw = bw.startsWith("data:image")
-            ? bw
-            : bw.startsWith("http")
-              ? `/api/qr?u=${encodeURIComponent(bw)}`
-              : bw.includes("/")
-                ? `/api/qr?u=${encodeURIComponent(`https://${bw}`)}`
-                : `data:image/png;base64,${bw}`;
-          qr.qr_code_image = Gw;
+          const bwNoScheme = bw.replace(/^https?:\/\//, "");
+          if (!bwNoScheme.startsWith("000201")) {
+            const Gw = bw.startsWith("data:image")
+              ? bw
+              : bw.startsWith("http")
+                ? `/api/qr?u=${encodeURIComponent(bw)}`
+                : bw.includes("/")
+                  ? `/api/qr?u=${encodeURIComponent(`https://${bw}`)}`
+                  : `data:image/png;base64,${bw}`;
+            qr.qr_code_image = Gw;
+          }
         }
         if (qr && !qr.qr_code_image && qr.pix_code)
           try {

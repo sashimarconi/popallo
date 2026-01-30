@@ -7,6 +7,10 @@ module.exports = async function handler(req, res) {
 
     const raw = Array.isArray(url) ? url[0] : url;
     const target = raw.trim().split(/\s+/)[0];
+    const targetNoScheme = target.replace(/^https?:\/\//i, "");
+    if (targetNoScheme.startsWith("000201")) {
+      return res.status(400).json({ error: "Invalid url" });
+    }
     if (!/^https?:\/\//i.test(target)) {
       return res.status(400).json({ error: "Invalid url" });
     }
@@ -16,7 +20,13 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "Invalid url" });
     }
 
-    const response = await fetch(target);
+    const response = await fetch(target, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Accept: "image/*,*/*;q=0.8",
+      },
+      redirect: "follow",
+    });
     if (!response.ok) {
       return res.status(response.status).json({ error: "Failed to fetch QR" });
     }
@@ -30,6 +40,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).send(buffer);
   } catch (error) {
     console.error("[QR] Error fetching QR:", error.message);
-    return res.status(500).json({ error: "Internal error" });
+    return res.status(502).json({ error: "Upstream error" });
   }
 };
