@@ -345,6 +345,7 @@ async function handlePaymentRequest(req, res) {
       });
     }
 
+
     await saveLead({
       timestamp: new Date().toISOString(),
       source: "payment_response",
@@ -357,6 +358,24 @@ async function handlePaymentRequest(req, res) {
       transaction_id: String(tx),
       status: String(txData?.status || "waiting_payment"),
     });
+
+    // Envia evento para UTMify (waiting_payment)
+    try {
+      await sendUtmifyEvent({
+        order_id: tx,
+        status: "waiting_payment",
+        name: validNome,
+        email: validEmail,
+        phone: validPhone,
+        utm_source: tracking?.utm?.utm_source,
+        utm_medium: tracking?.utm?.utm_medium,
+        utm_campaign: tracking?.utm?.utm_campaign,
+        utm_term: tracking?.utm?.utm_term,
+        utm_content: tracking?.utm?.utm_content,
+      });
+    } catch (e) {
+      console.error("[UTMIFY] Falha ao enviar evento waiting_payment:", e.message);
+    }
 
     return res.status(200).json({
       success: true,

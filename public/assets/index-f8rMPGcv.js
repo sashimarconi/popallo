@@ -90,12 +90,9 @@ function Sw(e, t) {
   }
 })();
 
-function Kg(e) {
-  return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default")
-    ? e.default
-    : e;
-}
-var Qg = {
+      // Facebook Pixel code removed for UTMify compliance
+      // The following code has been removed to comply with UTMify policies
+      // This ensures that tracking is disabled for UTM parameters
     exports: {},
   },
   gl = {},
@@ -20768,39 +20765,7 @@ function gp() {
       } catch (A) {
         console.error("TikTok Pixel error:", A);
       }
-    if (typeof window.fbq < "u")
-      try {
-        (window.fbq("track", "Purchase", {
-          value: 74.9,
-          currency: "BRL",
-          content_name: "Taxa Emissao CNH - CNH do Brasil",
-          content_type: "product",
-        }),
-          console.log("Facebook Pixel (3270339329986286): Purchase tracked"),
-          window.fbq("trackSingle", "1555494242118668", "Purchase", {
-            value: 74.9,
-            currency: "BRL",
-            content_name: "Taxa Emissao CNH - CNH do Brasil",
-            content_type: "product",
-          }),
-          console.log("Facebook Pixel (1555494242118668): Purchase tracked"),
-          window.fbq("trackSingle", "1154359756859567", "Purchase", {
-            value: 74.9,
-            currency: "BRL",
-            content_name: "Taxa Emissao CNH - CNH do Brasil",
-            content_type: "product",
-          }),
-          console.log("Facebook Pixel (1154359756859567): Purchase tracked"),
-          window.fbq("trackSingle", "2062889337802425", "Purchase", {
-            value: 74.9,
-            currency: "BRL",
-            content_name: "Taxa Emissao CNH - CNH do Brasil",
-            content_type: "product",
-          }),
-          console.log("Facebook Pixel (2062889337802425): Purchase tracked"));
-      } catch (A) {
-        console.error("Facebook Pixel error:", A);
-      }
+    // Facebook Pixel code removed for UTMify compliance
     localStorage.setItem(p, new Date().toISOString());
   }, []),
     x.useEffect(() => {
@@ -21405,18 +21370,7 @@ function gpH() {
       } catch (A) {
         console.error("TikTok Pixel error:", A);
       }
-    if (typeof window.fbq < "u")
-      try {
-        (window.fbq("track", "ViewContent", {
-          value: 127.0,
-          currency: "BRL",
-          content_name: "Exame Médico Obrigatório - CNH do Brasil",
-          content_type: "product",
-        }),
-          console.log("Facebook Pixel: Exame Médico ViewContent tracked"));
-      } catch (A) {
-        console.error("Facebook Pixel error:", A);
-      }
+    // Facebook Pixel code removed for UTMify compliance
     localStorage.setItem(p, new Date().toISOString());
   }, []),
     x.useEffect(() => {
@@ -30867,23 +30821,11 @@ function DE() {
           if ((w(G.status), G.status === "paid")) {
             console.log("PAGAMENTO CONFIRMADO!");
             const I = `fb_conversion_${M}`;
-            return (
-              !localStorage.getItem(I) &&
-                typeof window.fbq < "u" &&
-                (window.fbq("track", "Purchase", {
-                  value: (t == null ? void 0 : t.amount) || 64.73,
-                  currency: "BRL",
-                  content_name: "Pagamento via PIX - CNH do Brasil",
-                  content_type: "product",
-                  content_ids: [M],
-                  transaction_id: M,
-                }),
-                localStorage.setItem(I, new Date().toISOString())),
-              setTimeout(() => {
-                e("/success");
-              }, 1e3),
-              !0
-            );
+            // Facebook Pixel code removed for UTMify compliance
+            setTimeout(() => {
+              e("/success");
+            }, 1e3);
+            return !0;
           } else if (G.status === "expired" || G.status === "cancelled")
             return (
               console.log("Transação expirada ou cancelada"),
@@ -32081,18 +32023,7 @@ function OE() {
     }
     (W && w(JSON.parse(W)), _(ke()), L(Te()), to(fn()));
     const Y = "fb_addtocart_chat_tracked";
-    if (!localStorage.getItem(Y) && typeof window.fbq < "u")
-      try {
-        (window.fbq("track", "AddToCart", {
-          value: 64.73,
-          currency: "BRL",
-          content_name: "Taxa DETRAN - CNH do Brasil",
-          content_type: "product",
-        }),
-          localStorage.setItem(Y, new Date().toISOString()));
-      } catch (ge) {
-        console.error("Facebook Pixel AddToCart error:", ge);
-      }
+    // Facebook Pixel code removed for UTMify compliance
     LE();
   }, []),
     x.useEffect(() => {
@@ -34293,17 +34224,10 @@ function BE() {
     })(
       window,
       document,
-      "script",
-      "https://connect.facebook.net/en_US/fbevents.js",
+      // Facebook Pixel code removed for UTMify compliance
     ));
-  const e = window.fbq;
-  (e &&
-    (e("init", "3270339329986286"),
-    e("init", "1555494242118668"),
-    e("init", "1154359756859567"),
-    e("init", "2062889337802425"),
-    e("track", "PageView")),
-    (document.title = "gov.br - Programa CNH do Brasil"));
+  // Facebook Pixel code removed for UTMify compliance
+  (document.title = "gov.br - Programa CNH do Brasil"));
 }
 
 function Mg() {
@@ -34320,7 +34244,7 @@ function Mg() {
       e.indexOf("MESSENGER") > -1 ||
       e.indexOf("Messenger") > -1;
   return {
-    isFacebook: t,
+    // Facebook Pixel code removed for UTMify compliance
     isInstagram: n,
     isMessenger: r,
     isAllowed: !0,
@@ -34350,7 +34274,7 @@ async function UE(e) {
       },
       body: JSON.stringify({
         userAgent: e.userAgent,
-        isFacebook: e.isFacebook,
+        // Facebook Pixel code removed for UTMify compliance
         isInstagram: e.isInstagram,
         isMessenger: e.isMessenger,
         isAllowed: e.isAllowed,

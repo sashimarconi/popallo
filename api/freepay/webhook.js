@@ -1,4 +1,6 @@
+
 const db = require("../_db");
+const utmifyWebhook = require("../utmify-webhook");
 
 module.exports = async (req, res) => {
   try {
@@ -17,9 +19,12 @@ module.exports = async (req, res) => {
 
     console.log("[ALLOWPAY WEBHOOK]", { id, status, payload: body });
 
+
     if (status === "paid" && id && db.getConnectionString()) {
       await db.query("UPDATE leads SET status = $1 WHERE transaction_id = $2", ["PAID", String(id)]);
       await db.query("UPDATE comprovantes SET status = $1 WHERE transaction_id = $2", ["paid", String(id)]);
+      // Chama integração UTMify
+      await utmifyWebhook(req, { status: () => ({ json: () => {} }) });
     }
 
     return res.status(200).json({ success: true });
