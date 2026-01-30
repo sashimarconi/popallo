@@ -239,8 +239,17 @@ async function handlePaymentRequest(req, res) {
     const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
     const tx = txData?.id || txData?.transaction_id || txData?.txid;
     const pixInfo = Array.isArray(txData?.pix) ? txData.pix[0] : txData?.pix || {};
-    const pixText = pixInfo?.qr_code || pixInfo?.e2e || txData?.pix_code || "";
-    const pixQr = pixInfo?.url || "";
+    const pixText =
+      pixInfo?.qr_code ||
+      pixInfo?.emv ||
+      pixInfo?.brcode ||
+      pixInfo?.code ||
+      pixInfo?.copy_and_paste ||
+      txData?.pix_code ||
+      txData?.qr_code ||
+      (typeof txData?.pix === "object" ? txData?.pix?.qr_code || txData?.pix?.code : "") ||
+      "";
+    const pixQr = pixInfo?.url || txData?.pix_qr_code || "";
     const pixQrWithPrefix = pixQr && pixQr.startsWith("data:image")
       ? pixQr
       : "";

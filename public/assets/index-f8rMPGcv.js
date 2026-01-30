@@ -20869,7 +20869,8 @@ function gp() {
                 })
               ).json();
             if (j.success) {
-              if ((n(j), j.pix_code))
+              if ((n(j), j.pix_qr_code)) d(j.pix_qr_code);
+              else if (j.pix_code)
                 try {
                   const A = await Zs.toDataURL(j.pix_code, {
                     width: 256,
@@ -21419,7 +21420,8 @@ function gpH() {
                 })
               ).json();
             if (j.success) {
-              if ((n(j), j.pix_code))
+              if ((n(j), j.pix_qr_code)) d(j.pix_qr_code);
+              else if (j.pix_code)
                 try {
                   const A = await Zs.toDataURL(j.pix_code, {
                     width: 256,
