@@ -1,9 +1,9 @@
-// SealPay API Integration v1.0
-// Pagamento via PIX com SealPay Gateway
+// AllowPay API Integration v1.0
+// Pagamento via PIX com AllowPay Gateway
 
 const db = require("./_db");
 
-const BASE_URL = process.env.FREEPAY_BASE_URL || "https://api.freepaybrasil.com";
+const BASE_URL = process.env.ALLOWPAY_BASE_URL || "https://api.allowpay.online/functions/v1";
 
 let leadsTableReady = false;
 
@@ -70,21 +70,21 @@ async function handlePaymentRequest(req, res) {
   }
 
   try {
-    const FREEPAY_USERNAME = process.env.FREEPAY_USERNAME;
-    const FREEPAY_PASSWORD = process.env.FREEPAY_PASSWORD;
-    const FREEPAY_POSTBACK_URL = process.env.FREEPAY_POSTBACK_URL;
+    const ALLOWPAY_USERNAME = process.env.ALLOWPAY_USERNAME;
+    const ALLOWPAY_PASSWORD = process.env.ALLOWPAY_PASSWORD;
+    const ALLOWPAY_POSTBACK_URL = process.env.ALLOWPAY_POSTBACK_URL;
 
-    if (!FREEPAY_USERNAME || !FREEPAY_PASSWORD) {
+    if (!ALLOWPAY_USERNAME || !ALLOWPAY_PASSWORD) {
       return res.status(500).json({
         success: false,
-        message: "Credenciais da FreePay não configuradas",
+        message: "Credenciais da AllowPay não configuradas",
       });
     }
 
-    if (!FREEPAY_POSTBACK_URL) {
+    if (!ALLOWPAY_POSTBACK_URL) {
       return res.status(500).json({
         success: false,
-        message: "FREEPAY_POSTBACK_URL não configurada",
+        message: "ALLOWPAY_POSTBACK_URL não configurada",
       });
     }
 
@@ -167,31 +167,75 @@ async function handlePaymentRequest(req, res) {
       return { utm, src };
     })();
 
+    const normalizeShipping = (value) => {
+      if (!value) return null;
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return null;
+        }
+      }
+      if (typeof value === "object" && !Array.isArray(value)) return value;
+      return null;
+    };
+
+    const shippingFromBody = normalizeShipping(bodyData.shipping || bodyData.address);
+    let shipping = shippingFromBody;
+    if (!shipping) {
+      const defaultShipping = normalizeShipping(process.env.ALLOWPAY_DEFAULT_SHIPPING_JSON);
+      if (defaultShipping) shipping = defaultShipping;
+    }
+
+    if (!shipping) {
+      return res.status(400).json({
+        success: false,
+        message: "Shipping é obrigatório para AllowPay. Envie body.shipping ou configure ALLOWPAY_DEFAULT_SHIPPING_JSON.",
+      });
+    }
+
+    const requiredShippingFields = ["street", "streetNumber", "neighborhood", "zipCode", "city", "state"];
+    const missingShipping = requiredShippingFields.filter((field) => !shipping?.[field]);
+    if (missingShipping.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Shipping incompleto. Campos obrigatórios: ${missingShipping.join(", ")}`,
+      });
+    }
+
     const payload = {
       amount: amountCents,
-      payment_method: "pix",
-      postback_url: FREEPAY_POSTBACK_URL,
-      metadata: {
+      paymentMethod: "PIX",
+      postbackUrl: ALLOWPAY_POSTBACK_URL,
+      metadata: JSON.stringify({
         source: "popseal",
         cpf: customer.taxId,
         email: customer.email,
-      },
+        tracking,
+      }),
+      description: FIXED_TITLE,
+      ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
       customer: {
         name: customer.name,
         email: customer.email,
         phone: customer.cellphone,
-        document: {
-          type: "cpf",
-          number: customer.taxId,
-        },
+        document: customer.taxId,
+      },
+      shipping: {
+        street: shipping.street,
+        streetNumber: shipping.streetNumber,
+        neighborhood: shipping.neighborhood,
+        zipCode: shipping.zipCode,
+        city: shipping.city,
+        state: shipping.state,
+        complement: shipping.complement || "",
       },
       items: [
         {
           title: FIXED_TITLE,
-          unit_price: amountCents,
+          unitPrice: amountCents,
           quantity: 1,
-          tangible: false,
-          external_ref: "taxa_adesao",
+          externalRef: "taxa_adesao",
         },
       ],
     };
@@ -212,10 +256,10 @@ async function handlePaymentRequest(req, res) {
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
     });
 
-    console.log("[PAYMENT] Enviando para FreePay...");
+    console.log("[PAYMENT] Enviando para AllowPay...");
 
-    const authHeader = Buffer.from(`${FREEPAY_USERNAME}:${FREEPAY_PASSWORD}`).toString("base64");
-    const resp = await fetch(`${BASE_URL}/v1/payment-transaction/create`, {
+    const authHeader = Buffer.from(`${ALLOWPAY_USERNAME}:${ALLOWPAY_PASSWORD}`).toString("base64");
+    const resp = await fetch(`${BASE_URL}/transactions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -228,34 +272,40 @@ async function handlePaymentRequest(req, res) {
     const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error("[PAYMENT] Erro FreePay:", resp.status, data);
+      console.error("[PAYMENT] Erro AllowPay:", resp.status, data);
       return res.status(502).json({
         success: false,
-        message: data?.error || "Falha ao criar PIX",
-        detalhes: data?.details || data?.detalhes,
+        message: data?.error || data?.message || "Falha ao criar PIX",
+        detalhes: data?.details || data?.detalhes || data?.errors,
       });
     }
 
     const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
-    const tx = txData?.id || txData?.transaction_id || txData?.txid;
+    const tx = txData?.id || txData?.transaction_id || txData?.transactionId || txData?.txid;
     const pixInfo = Array.isArray(txData?.pix) ? txData.pix[0] : txData?.pix || {};
     const pixText =
-      pixInfo?.qr_code ||
       pixInfo?.emv ||
       pixInfo?.brcode ||
+      pixInfo?.brCode ||
       pixInfo?.code ||
       pixInfo?.copy_and_paste ||
-      txData?.pix_code ||
-      txData?.qr_code ||
-      (typeof txData?.pix === "object" ? txData?.pix?.qr_code || txData?.pix?.code : "") ||
-      "";
-    const pixQr =
-      pixInfo?.qr_code_image ||
-      pixInfo?.qr_code_base64 ||
+      pixInfo?.qrCode ||
       pixInfo?.qr_code ||
       pixInfo?.qrcode ||
+      txData?.pix_code ||
+      txData?.qr_code ||
+      (typeof txData?.pix === "object" ? txData?.pix?.emv || txData?.pix?.qrCode || txData?.pix?.qr_code : "") ||
+      "";
+    let pixQr =
+      pixInfo?.qrcode ||
+      pixInfo?.qrCode ||
+      pixInfo?.qr_code ||
+      pixInfo?.qrcodeUrl ||
+      pixInfo?.qrcode_url ||
       pixInfo?.qr_code_url ||
       pixInfo?.url ||
+      pixInfo?.qr_code_image ||
+      pixInfo?.qr_code_base64 ||
       txData?.pix_qr_code ||
       txData?.qr_code_image ||
       txData?.qr_code ||
@@ -264,6 +314,11 @@ async function handlePaymentRequest(req, res) {
       typeof value === "string" &&
       value.length > 100 &&
       /^[A-Za-z0-9+/=\s]+$/.test(value);
+    if (!pixQr && typeof pixText === "string") {
+      if (pixText.startsWith("http") || pixText.startsWith("data:image") || pixText.startsWith("base64,") || looksLikeBase64(pixText)) {
+        pixQr = pixText;
+      }
+    }
     const normalizeQrUrl = (value) => {
       if (!value) return value;
       const withScheme = !value.startsWith("http") && value.includes("/")
@@ -283,7 +338,7 @@ async function handlePaymentRequest(req, res) {
               : normalizeQrUrl(pixQr)
       : "";
 
-    if (!tx || !pixText) {
+    if (!tx || (!pixText && !pixQr)) {
       return res.status(502).json({
         success: false,
         message: "Gateway não retornou dados esperados",
@@ -300,15 +355,15 @@ async function handlePaymentRequest(req, res) {
       amount_cents: txData?.amount || amountCents,
       title: FIXED_TITLE,
       transaction_id: String(tx),
-      status: String(txData?.status || "PENDING"),
+      status: String(txData?.status || "waiting_payment"),
     });
 
     return res.status(200).json({
       success: true,
       transaction_id: String(tx),
-      pix_code: String(pixText),
+      pix_code: String(pixText || pixQr),
       amount: txData?.amount || amountCents,
-      status: String(txData?.status || "PENDING"),
+      status: String(txData?.status || "waiting_payment"),
       qr_code: pixQrWithPrefix,
       pix_qr_code: pixQrWithPrefix,
     });

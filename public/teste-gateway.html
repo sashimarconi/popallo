@@ -91,6 +91,43 @@
         </div>
       </div>
 
+      <label>Endereço (obrigatório para AllowPay)</label>
+      <div class="row">
+        <div>
+          <label for="street">Rua</label>
+          <input id="street" type="text" value="Rua Exemplo" />
+        </div>
+        <div>
+          <label for="streetNumber">Número</label>
+          <input id="streetNumber" type="text" value="100" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="neighborhood">Bairro</label>
+          <input id="neighborhood" type="text" value="Centro" />
+        </div>
+        <div>
+          <label for="zipCode">CEP</label>
+          <input id="zipCode" type="text" value="01001000" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="city">Cidade</label>
+          <input id="city" type="text" value="São Paulo" />
+        </div>
+        <div>
+          <label for="state">UF</label>
+          <input id="state" type="text" value="SP" />
+        </div>
+      </div>
+
+      <label for="complement">Complemento</label>
+      <input id="complement" type="text" value="" />
+
       <button id="send">Gerar PIX</button>
 
       <div class="qr" id="qr"></div>
@@ -110,6 +147,15 @@
           phone: document.getElementById("phone").value,
           amount: document.getElementById("amount").value,
           title: document.getElementById("title").value,
+          shipping: {
+            street: document.getElementById("street").value,
+            streetNumber: document.getElementById("streetNumber").value,
+            neighborhood: document.getElementById("neighborhood").value,
+            zipCode: document.getElementById("zipCode").value,
+            city: document.getElementById("city").value,
+            state: document.getElementById("state").value,
+            complement: document.getElementById("complement").value,
+          },
         };
 
         result.textContent = "Enviando...";

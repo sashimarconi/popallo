@@ -6,10 +6,12 @@
  */
 
 // Se estiver testando localmente, certifique-se que as variáveis estão definidas:
-// $env:SEALPAY_API_KEY = "seu_token_api"
+// $env:ALLOWPAY_USERNAME = "seu_usuario"
+// $env:ALLOWPAY_PASSWORD = "sua_senha"
+// $env:ALLOWPAY_POSTBACK_URL = "https://seu-dominio.com/api/freepay/webhook"
 
 const API_URL = process.env.API_URL || "https://popcnh.vercel.app/api/payment/payment.php";
-const API_KEY = process.env.SEALPAY_API_KEY;
+const API_KEY = process.env.ALLOWPAY_USERNAME && process.env.ALLOWPAY_PASSWORD;
 
 const testData = {
   cpf: "07317831905",
@@ -18,6 +20,15 @@ const testData = {
   phone: "(44) 92802-8281",
   amount: "64.73",
   title: "Taxa de Adesão",
+  shipping: {
+    street: "Rua Exemplo",
+    streetNumber: "100",
+    neighborhood: "Centro",
+    zipCode: "01001000",
+    city: "São Paulo",
+    state: "SP",
+    complement: "",
+  },
 };
 
 async function testPaymentAPI() {

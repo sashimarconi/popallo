@@ -13,9 +13,9 @@ module.exports = async (req, res) => {
 
     const data = Array.isArray(body?.data) ? body.data[0] : body?.data || body;
     const status = (data?.status || body?.status || "").toString().toLowerCase();
-    const id = data?.id || data?.transaction_id || body?.id || "";
+    const id = data?.id || body?.objectId || body?.id || data?.transaction_id || "";
 
-    console.log("[FREEPAY WEBHOOK]", { id, status, payload: body });
+    console.log("[ALLOWPAY WEBHOOK]", { id, status, payload: body });
 
     if (status === "paid" && id && db.getConnectionString()) {
       await db.query("UPDATE leads SET status = $1 WHERE transaction_id = $2", ["PAID", String(id)]);
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error("[FREEPAY WEBHOOK] erro:", error);
+    console.error("[ALLOWPAY WEBHOOK] erro:", error);
     return res.status(500).json({ success: false });
   }
 };
