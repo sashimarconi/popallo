@@ -1,28 +1,25 @@
-const BASE_URL = process.env.ALLOWPAY_BASE_URL || "https://api.allowpay.online/functions/v1";
+const BASE_URL = process.env.BLACKCAT_BASE_URL || "https://api.blackcatpagamentos.online/api";
 
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") return res.status(405).send("Method Not Allowed");
 
-    const ALLOWPAY_USERNAME = process.env.ALLOWPAY_USERNAME;
-    const ALLOWPAY_PASSWORD = process.env.ALLOWPAY_PASSWORD;
-    if (!ALLOWPAY_USERNAME || !ALLOWPAY_PASSWORD) {
-      return res.status(500).json({ success: false, message: "Credenciais da AllowPay não configuradas" });
+    const BLACKCAT_API_KEY = process.env.BLACKCAT_API_KEY;
+    if (!BLACKCAT_API_KEY) {
+      return res.status(500).json({ success: false, message: "Credenciais da Blackcat não configuradas" });
     }
 
     const id = String(req.query.id || req.query.transaction_id || "").trim();
     if (!id) return res.status(400).json({ success: false, message: "id é obrigatório" });
 
-    const url = `${BASE_URL}/transactions/${encodeURIComponent(id)}`;
-
-    const authHeader = Buffer.from(`${ALLOWPAY_USERNAME}:${ALLOWPAY_PASSWORD}`).toString("base64");
+    const url = `${BASE_URL}/sales/${encodeURIComponent(id)}/status`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Basic ${authHeader}`,
+        "X-API-Key": BLACKCAT_API_KEY,
       },
     });
 
@@ -30,7 +27,7 @@ module.exports = async (req, res) => {
 
     if (response.ok) {
       const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
-      const status = txData?.status || data?.status || data?.payment_status || "waiting_payment";
+      const status = txData?.status || data?.status || data?.payment_status || "PENDING";
       return res.json({ success: true, status, transaction: txData || data });
     }
 

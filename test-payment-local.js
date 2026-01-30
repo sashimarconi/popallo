@@ -5,9 +5,7 @@
  * Execute: node test-payment-local.js
  * 
  * Antes, configure as variáveis:
- * $env:ALLOWPAY_USERNAME = "seu_usuario"
- * $env:ALLOWPAY_PASSWORD = "sua_senha"
- * $env:ALLOWPAY_POSTBACK_URL = "https://seu-dominio.com/api/freepay/webhook"
+ * $env:SEALPAY_API_KEY = "seu_token_api"
  */
 
 // Importar o módulo de pagamento diretamente
@@ -20,15 +18,6 @@ const testData = {
   phone: "(44) 92802-8281",
   amount: "64.73",
   title: "Taxa de Adesão",
-  shipping: {
-    street: "Rua Exemplo",
-    streetNumber: "100",
-    neighborhood: "Centro",
-    zipCode: "01001000",
-    city: "São Paulo",
-    state: "SP",
-    complement: "",
-  },
 };
 
 // Mock de request e response
@@ -71,12 +60,10 @@ async function test() {
   console.log("\n---\n");
   console.log("⏳ Processando...");
   
-  if (!process.env.ALLOWPAY_USERNAME || !process.env.ALLOWPAY_PASSWORD || !process.env.ALLOWPAY_POSTBACK_URL) {
+  if (!process.env.SEALPAY_API_KEY) {
     console.error("\n❌ ERRO: Variáveis de ambiente não configuradas!");
     console.error("\nConfigure com:");
-    console.error('  $env:ALLOWPAY_USERNAME = "seu_usuario"');
-    console.error('  $env:ALLOWPAY_PASSWORD = "sua_senha"');
-    console.error('  $env:ALLOWPAY_POSTBACK_URL = "https://seu-dominio.com/api/freepay/webhook"');
+    console.error('  $env:SEALPAY_API_KEY = "seu_token_api"');
     return;
   }
 

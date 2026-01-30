@@ -12,15 +12,6 @@ const testData = {
   phone: "(44) 92802-8281",
   amount: "64.73",
   title: "Taxa de Adesão",
-  shipping: {
-    street: "Rua Exemplo",
-    streetNumber: "100",
-    neighborhood: "Centro",
-    zipCode: "01001000",
-    city: "São Paulo",
-    state: "SP",
-    complement: "",
-  },
 };
 
 async function testRemoteAPI() {

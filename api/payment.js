@@ -1,9 +1,81 @@
-// AllowPay API Integration v1.0
-// Pagamento via PIX com AllowPay Gateway
+// Blackcat API Integration
+// Pagamento via PIX com Blackcat Gateway
 
 const db = require("./_db");
 
-const BASE_URL = process.env.ALLOWPAY_BASE_URL || "https://api.allowpay.online/functions/v1";
+const BASE_URL = process.env.BLACKCAT_BASE_URL || "https://api.blackcatpagamentos.online/api";
+const UTMIFY_API_URL = "https://api.utmify.com.br/api-credentials/orders";
+
+function formatUtcDate(date) {
+  const iso = new Date(date).toISOString();
+  return iso.replace("T", " ").substring(0, 19);
+}
+
+function buildTrackingParameters(tracking) {
+  const utm = tracking && typeof tracking.utm === "object" && tracking.utm ? tracking.utm : {};
+  return {
+    src: tracking?.src || utm?.src || null,
+    sck: tracking?.sck || utm?.sck || null,
+    utm_source: utm?.utm_source || utm?.source || null,
+    utm_campaign: utm?.utm_campaign || null,
+    utm_medium: utm?.utm_medium || null,
+    utm_content: utm?.utm_content || null,
+    utm_term: utm?.utm_term || null,
+  };
+}
+
+async function sendUtmifyOrder({
+  token,
+  orderId,
+  status,
+  createdAt,
+  approvedDate,
+  customer,
+  products,
+  trackingParameters,
+  totalPriceInCents,
+  gatewayFeeInCents = 0,
+  userCommissionInCents,
+  paymentMethod = "pix",
+  platform = "Blackcat",
+}) {
+  if (!token) return;
+  const payload = {
+    orderId: String(orderId),
+    platform,
+    paymentMethod,
+    status,
+    createdAt: formatUtcDate(createdAt),
+    approvedDate: approvedDate ? formatUtcDate(approvedDate) : null,
+    refundedAt: null,
+    customer,
+    products,
+    trackingParameters,
+    commission: {
+      totalPriceInCents,
+      gatewayFeeInCents,
+      userCommissionInCents,
+    },
+    isTest: false,
+  };
+
+  try {
+    const resp = await fetch(UTMIFY_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-token": token,
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      console.error("[UTMIFY] Erro ao enviar pedido:", resp.status, data);
+    }
+  } catch (error) {
+    console.error("[UTMIFY] Falha ao enviar pedido:", error.message || error);
+  }
+}
 
 let leadsTableReady = false;
 
@@ -70,21 +142,20 @@ async function handlePaymentRequest(req, res) {
   }
 
   try {
-    const ALLOWPAY_USERNAME = process.env.ALLOWPAY_USERNAME;
-    const ALLOWPAY_PASSWORD = process.env.ALLOWPAY_PASSWORD;
-    const ALLOWPAY_POSTBACK_URL = process.env.ALLOWPAY_POSTBACK_URL;
+    const BLACKCAT_API_KEY = process.env.BLACKCAT_API_KEY;
+    const BLACKCAT_POSTBACK_URL = process.env.BLACKCAT_POSTBACK_URL;
 
-    if (!ALLOWPAY_USERNAME || !ALLOWPAY_PASSWORD) {
+    if (!BLACKCAT_API_KEY) {
       return res.status(500).json({
         success: false,
-        message: "Credenciais da AllowPay não configuradas",
+        message: "Credenciais da Blackcat não configuradas",
       });
     }
 
-    if (!ALLOWPAY_POSTBACK_URL) {
+    if (!BLACKCAT_POSTBACK_URL) {
       return res.status(500).json({
         success: false,
-        message: "ALLOWPAY_POSTBACK_URL não configurada",
+        message: "BLACKCAT_POSTBACK_URL não configurada",
       });
     }
 
@@ -167,77 +238,43 @@ async function handlePaymentRequest(req, res) {
       return { utm, src };
     })();
 
-    const normalizeShipping = (value) => {
-      if (!value) return null;
-      if (typeof value === "string") {
-        try {
-          return JSON.parse(value);
-        } catch {
-          return null;
-        }
-      }
-      if (typeof value === "object" && !Array.isArray(value)) return value;
-      return null;
-    };
-
-    const shippingFromBody = normalizeShipping(bodyData.shipping || bodyData.address);
-    let shipping = shippingFromBody;
-    if (!shipping) {
-      const defaultShipping = normalizeShipping(process.env.ALLOWPAY_DEFAULT_SHIPPING_JSON);
-      if (defaultShipping) shipping = defaultShipping;
-    }
-
-    if (!shipping) {
-      return res.status(400).json({
-        success: false,
-        message: "Shipping é obrigatório para AllowPay. Envie body.shipping ou configure ALLOWPAY_DEFAULT_SHIPPING_JSON.",
-      });
-    }
-
-    const requiredShippingFields = ["street", "streetNumber", "neighborhood", "zipCode", "city", "state"];
-    const missingShipping = requiredShippingFields.filter((field) => !shipping?.[field]);
-    if (missingShipping.length) {
-      return res.status(400).json({
-        success: false,
-        message: `Shipping incompleto. Campos obrigatórios: ${missingShipping.join(", ")}`,
-      });
-    }
-
+    const documentType = customer.taxId && customer.taxId.length > 11 ? "cnpj" : "cpf";
     const payload = {
       amount: amountCents,
-      paymentMethod: "PIX",
-      postbackUrl: ALLOWPAY_POSTBACK_URL,
-      metadata: JSON.stringify({
-        source: "popseal",
-        cpf: customer.taxId,
-        email: customer.email,
-        tracking,
-      }),
-      description: FIXED_TITLE,
-      ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
-      customer: {
-        name: customer.name,
-        email: customer.email,
-        phone: customer.cellphone,
-        document: customer.taxId,
-      },
-      shipping: {
-        street: shipping.street,
-        streetNumber: shipping.streetNumber,
-        neighborhood: shipping.neighborhood,
-        zipCode: shipping.zipCode,
-        city: shipping.city,
-        state: shipping.state,
-        complement: shipping.complement || "",
-      },
+      currency: "BRL",
+      paymentMethod: "pix",
       items: [
         {
           title: FIXED_TITLE,
           unitPrice: amountCents,
           quantity: 1,
-          externalRef: "taxa_adesao",
+          tangible: false,
         },
       ],
+      customer: {
+        name: customer.name,
+        email: customer.email,
+        phone: customer.cellphone,
+        document: {
+          type: documentType,
+          number: customer.taxId,
+        },
+      },
+      pix: {
+        expiresInDays: 1,
+      },
+      postbackUrl: BLACKCAT_POSTBACK_URL,
+      externalRef: "taxa_adesao",
+      metadata: JSON.stringify({
+        source: "popseal",
+        cpf: customer.taxId,
+        email: customer.email,
+      }),
+      utm_source: tracking?.utm?.utm_source || tracking?.utm?.source || tracking?.src || undefined,
+      utm_medium: tracking?.utm?.utm_medium || undefined,
+      utm_campaign: tracking?.utm?.utm_campaign || undefined,
+      utm_content: tracking?.utm?.utm_content || undefined,
+      utm_term: tracking?.utm?.utm_term || undefined,
     };
 
     const userAgent = bodyData.user_agent || req.headers["user-agent"] || "";
@@ -256,15 +293,14 @@ async function handlePaymentRequest(req, res) {
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
     });
 
-    console.log("[PAYMENT] Enviando para AllowPay...");
+    console.log("[PAYMENT] Enviando para Blackcat...");
 
-    const authHeader = Buffer.from(`${ALLOWPAY_USERNAME}:${ALLOWPAY_PASSWORD}`).toString("base64");
-    const resp = await fetch(`${BASE_URL}/transactions`, {
+    const resp = await fetch(`${BASE_URL}/sales/create-sale`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Basic ${authHeader}`,
+        "X-API-Key": BLACKCAT_API_KEY,
       },
       body: JSON.stringify(payload),
     });
@@ -272,40 +308,26 @@ async function handlePaymentRequest(req, res) {
     const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error("[PAYMENT] Erro AllowPay:", resp.status, data);
+      console.error("[PAYMENT] Erro Blackcat:", resp.status, data);
       return res.status(502).json({
         success: false,
-        message: data?.error || data?.message || "Falha ao criar PIX",
-        detalhes: data?.details || data?.detalhes || data?.errors,
+        message: data?.error || "Falha ao criar PIX",
+        detalhes: data?.details || data?.detalhes,
       });
     }
 
     const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
-    const tx = txData?.id || txData?.transaction_id || txData?.transactionId || txData?.txid;
-    const pixInfo = Array.isArray(txData?.pix) ? txData.pix[0] : txData?.pix || {};
+    const tx = txData?.transactionId || txData?.id || txData?.transaction_id || txData?.txid;
+    const paymentData = txData?.paymentData || {};
     const pixText =
-      pixInfo?.emv ||
-      pixInfo?.brcode ||
-      pixInfo?.brCode ||
-      pixInfo?.code ||
-      pixInfo?.copy_and_paste ||
-      pixInfo?.qrCode ||
-      pixInfo?.qr_code ||
-      pixInfo?.qrcode ||
+      paymentData?.copyPaste ||
+      paymentData?.qrCode ||
       txData?.pix_code ||
       txData?.qr_code ||
-      (typeof txData?.pix === "object" ? txData?.pix?.emv || txData?.pix?.qrCode || txData?.pix?.qr_code : "") ||
       "";
-    let pixQr =
-      pixInfo?.qrcode ||
-      pixInfo?.qrCode ||
-      pixInfo?.qr_code ||
-      pixInfo?.qrcodeUrl ||
-      pixInfo?.qrcode_url ||
-      pixInfo?.qr_code_url ||
-      pixInfo?.url ||
-      pixInfo?.qr_code_image ||
-      pixInfo?.qr_code_base64 ||
+    const pixQr =
+      paymentData?.qrCodeBase64 ||
+      paymentData?.qrCode ||
       txData?.pix_qr_code ||
       txData?.qr_code_image ||
       txData?.qr_code ||
@@ -314,11 +336,6 @@ async function handlePaymentRequest(req, res) {
       typeof value === "string" &&
       value.length > 100 &&
       /^[A-Za-z0-9+/=\s]+$/.test(value);
-    if (!pixQr && typeof pixText === "string") {
-      if (pixText.startsWith("http") || pixText.startsWith("data:image") || pixText.startsWith("base64,") || looksLikeBase64(pixText)) {
-        pixQr = pixText;
-      }
-    }
     const normalizeQrUrl = (value) => {
       if (!value) return value;
       const withScheme = !value.startsWith("http") && value.includes("/")
@@ -338,13 +355,12 @@ async function handlePaymentRequest(req, res) {
               : normalizeQrUrl(pixQr)
       : "";
 
-    if (!tx || (!pixText && !pixQr)) {
+    if (!tx || !pixText) {
       return res.status(502).json({
         success: false,
         message: "Gateway não retornou dados esperados",
       });
     }
-
 
     await saveLead({
       timestamp: new Date().toISOString(),
@@ -356,33 +372,52 @@ async function handlePaymentRequest(req, res) {
       amount_cents: txData?.amount || amountCents,
       title: FIXED_TITLE,
       transaction_id: String(tx),
-      status: String(txData?.status || "waiting_payment"),
+      status: String(txData?.status || "PENDING"),
     });
 
-    // Envia evento para UTMify (waiting_payment)
-    try {
-      await sendUtmifyEvent({
-        order_id: tx,
-        status: "waiting_payment",
-        name: validNome,
-        email: validEmail,
-        phone: validPhone,
-        utm_source: tracking?.utm?.utm_source,
-        utm_medium: tracking?.utm?.utm_medium,
-        utm_campaign: tracking?.utm?.utm_campaign,
-        utm_term: tracking?.utm?.utm_term,
-        utm_content: tracking?.utm?.utm_content,
-      });
-    } catch (e) {
-      console.error("[UTMIFY] Falha ao enviar evento waiting_payment:", e.message);
-    }
+    const UTMIFY_API_TOKEN = process.env.UTMIFY_API_TOKEN;
+    const customerForUtmify = {
+      name: customer.name,
+      email: customer.email,
+      phone: customer.cellphone || null,
+      document: customer.taxId || null,
+      country: "BR",
+      ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || null,
+    };
+    const productsForUtmify = [
+      {
+        id: "taxa_adesao",
+        name: FIXED_TITLE,
+        planId: null,
+        planName: null,
+        quantity: 1,
+        priceInCents: amountCents,
+      },
+    ];
+    const trackingParameters = buildTrackingParameters(tracking || {});
+
+    await sendUtmifyOrder({
+      token: UTMIFY_API_TOKEN,
+      orderId: String(tx),
+      status: "waiting_payment",
+      createdAt: new Date(),
+      approvedDate: null,
+      customer: customerForUtmify,
+      products: productsForUtmify,
+      trackingParameters,
+      totalPriceInCents: amountCents,
+      gatewayFeeInCents: 0,
+      userCommissionInCents: amountCents,
+      paymentMethod: "pix",
+      platform: "Blackcat",
+    });
 
     return res.status(200).json({
       success: true,
       transaction_id: String(tx),
-      pix_code: String(pixText || pixQr),
+      pix_code: String(pixText),
       amount: txData?.amount || amountCents,
-      status: String(txData?.status || "waiting_payment"),
+      status: String(txData?.status || "PENDING"),
       qr_code: pixQrWithPrefix,
       pix_qr_code: pixQrWithPrefix,
     });
