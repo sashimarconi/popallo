@@ -5,7 +5,9 @@
  * Execute: node test-payment-local.js
  * 
  * Antes, configure as variáveis:
- * $env:SEALPAY_API_KEY = "seu_token_api"
+ * $env:ALLOWPAY_SECRET_KEY = "sua_secret_key"
+ * $env:ALLOWPAY_COMPANY_ID = "seu_company_id"
+ * $env:ALLOWPAY_POSTBACK_URL = "https://seusite.com/webhook"
  */
 
 // Importar o módulo de pagamento diretamente
@@ -18,6 +20,18 @@ const testData = {
   phone: "(44) 92802-8281",
   amount: "64.73",
   title: "Taxa de Adesão",
+  shipping: {
+    address: {
+      street: "Rua das Flores",
+      streetNumber: "123",
+      complement: "Ap 101",
+      zipCode: "12345678",
+      neighborhood: "Centro",
+      city: "Sao Paulo",
+      state: "SP",
+      country: "BR",
+    },
+  },
 };
 
 // Mock de request e response
@@ -60,10 +74,12 @@ async function test() {
   console.log("\n---\n");
   console.log("⏳ Processando...");
   
-  if (!process.env.SEALPAY_API_KEY) {
+  if (!process.env.ALLOWPAY_SECRET_KEY || !process.env.ALLOWPAY_COMPANY_ID || !process.env.ALLOWPAY_POSTBACK_URL) {
     console.error("\n❌ ERRO: Variáveis de ambiente não configuradas!");
     console.error("\nConfigure com:");
-    console.error('  $env:SEALPAY_API_KEY = "seu_token_api"');
+    console.error('  $env:ALLOWPAY_SECRET_KEY = "sua_secret_key"');
+    console.error('  $env:ALLOWPAY_COMPANY_ID = "seu_company_id"');
+    console.error('  $env:ALLOWPAY_POSTBACK_URL = "https://seusite.com/webhook"');
     return;
   }
 
@@ -71,3 +87,6 @@ async function test() {
 }
 
 test();
+
+
+

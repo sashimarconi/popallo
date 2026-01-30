@@ -1,9 +1,9 @@
-// Blackcat API Integration
-// Pagamento via PIX com Blackcat Gateway
+// AllowPay API Integration
+// Pagamento via PIX com AllowPay Gateway
 
 const db = require("./_db");
 
-const BASE_URL = process.env.BLACKCAT_BASE_URL || "https://api.blackcatpagamentos.online/api";
+const BASE_URL = process.env.ALLOWPAY_BASE_URL || "https://api.allowpay.online/functions/v1";
 const UTMIFY_API_URL = "https://api.utmify.com.br/api-credentials/orders";
 
 function formatUtcDate(date) {
@@ -37,7 +37,7 @@ async function sendUtmifyOrder({
   gatewayFeeInCents = 0,
   userCommissionInCents,
   paymentMethod = "pix",
-  platform = "Blackcat",
+  platform = "AllowPay",
 }) {
   if (!token) return;
   const payload = {
@@ -142,20 +142,21 @@ async function handlePaymentRequest(req, res) {
   }
 
   try {
-    const BLACKCAT_API_KEY = process.env.BLACKCAT_API_KEY;
-    const BLACKCAT_POSTBACK_URL = process.env.BLACKCAT_POSTBACK_URL;
+    const ALLOWPAY_USERNAME = process.env.ALLOWPAY_USERNAME || process.env.ALLOWPAY_SECRET_KEY;
+    const ALLOWPAY_PASSWORD = process.env.ALLOWPAY_PASSWORD || process.env.ALLOWPAY_COMPANY_ID;
+    const ALLOWPAY_POSTBACK_URL = process.env.ALLOWPAY_POSTBACK_URL;
 
-    if (!BLACKCAT_API_KEY) {
+    if (!ALLOWPAY_USERNAME || !ALLOWPAY_PASSWORD) {
       return res.status(500).json({
         success: false,
-        message: "Credenciais da Blackcat não configuradas",
+        message: "Credenciais da AllowPay não configuradas",
       });
     }
 
-    if (!BLACKCAT_POSTBACK_URL) {
+    if (!ALLOWPAY_POSTBACK_URL) {
       return res.status(500).json({
         success: false,
-        message: "BLACKCAT_POSTBACK_URL não configurada",
+        message: "ALLOWPAY_POSTBACK_URL não configurada",
       });
     }
 
@@ -173,10 +174,10 @@ async function handlePaymentRequest(req, res) {
     console.log("[PAYMENT] Dados recebidos:", { cpf, nome, email, phone });
 
     // Validação
-    const validCpf = (cpf ?? customerFromBody?.taxId)?.toString().trim();
+    const validCpf = (cpf ?? customerFromBody?.document?.number ?? customerFromBody?.taxId)?.toString().trim();
     const validNome = (nome ?? customerFromBody?.name)?.toString().trim();
     const validEmail = (email ?? customerFromBody?.email)?.toString().trim();
-    const validPhone = (phone ?? customerFromBody?.cellphone)?.toString().trim();
+    const validPhone = (phone ?? customerFromBody?.phone ?? customerFromBody?.cellphone)?.toString().trim();
 
     if (!validNome || !validEmail) {
       return res.status(400).json({
@@ -219,8 +220,8 @@ async function handlePaymentRequest(req, res) {
     const customer = {
       name: customerFromBody?.name || validNome,
       email: customerFromBody?.email || validEmail,
-      cellphone: (customerFromBody?.cellphone || validPhone || "").toString().replace(/\D/g, ""),
-      taxId: (customerFromBody?.taxId || validCpf || "").toString().replace(/\D/g, ""),
+      phone: (customerFromBody?.phone || customerFromBody?.cellphone || validPhone || "").toString().replace(/\D/g, ""),
+      taxId: (customerFromBody?.document?.number || customerFromBody?.taxId || validCpf || "").toString().replace(/\D/g, ""),
     };
 
     const trackingFromBody = bodyData.tracking;
@@ -238,43 +239,98 @@ async function handlePaymentRequest(req, res) {
       return { utm, src };
     })();
 
-    const documentType = customer.taxId && customer.taxId.length > 11 ? "cnpj" : "cpf";
+    const documentType = customerFromBody?.document?.type
+      || (customer.taxId && customer.taxId.length > 11 ? "CNPJ" : "CPF");
+
+    const buildShippingAddress = () => {
+      const shippingFromBody = bodyData.shipping && typeof bodyData.shipping === "object"
+        ? bodyData.shipping
+        : null;
+      const addressFromBody = shippingFromBody?.address && typeof shippingFromBody.address === "object"
+        ? shippingFromBody.address
+        : null;
+
+      let defaultShippingJson = null;
+      if (process.env.ALLOWPAY_DEFAULT_SHIPPING_JSON) {
+        try {
+          defaultShippingJson = JSON.parse(process.env.ALLOWPAY_DEFAULT_SHIPPING_JSON);
+        } catch (error) {
+          console.error("[PAYMENT] ALLOWPAY_DEFAULT_SHIPPING_JSON invÃ¡lido:", error.message);
+        }
+      }
+
+      const fallback = {
+        street: defaultShippingJson?.address?.street || process.env.ALLOWPAY_DEFAULT_STREET || "",
+        streetNumber: defaultShippingJson?.address?.streetNumber || process.env.ALLOWPAY_DEFAULT_STREET_NUMBER || "",
+        complement: defaultShippingJson?.address?.complement || process.env.ALLOWPAY_DEFAULT_COMPLEMENT || "",
+        zipCode: defaultShippingJson?.address?.zipCode || process.env.ALLOWPAY_DEFAULT_ZIP_CODE || "",
+        neighborhood: defaultShippingJson?.address?.neighborhood || process.env.ALLOWPAY_DEFAULT_NEIGHBORHOOD || "",
+        city: defaultShippingJson?.address?.city || process.env.ALLOWPAY_DEFAULT_CITY || "",
+        state: defaultShippingJson?.address?.state || process.env.ALLOWPAY_DEFAULT_STATE || "",
+        country: defaultShippingJson?.address?.country || process.env.ALLOWPAY_DEFAULT_COUNTRY || "BR",
+      };
+
+      const address = {
+        street: addressFromBody?.street || fallback.street,
+        streetNumber: addressFromBody?.streetNumber || fallback.streetNumber,
+        complement: addressFromBody?.complement || fallback.complement,
+        zipCode: addressFromBody?.zipCode || fallback.zipCode,
+        neighborhood: addressFromBody?.neighborhood || fallback.neighborhood,
+        city: addressFromBody?.city || fallback.city,
+        state: addressFromBody?.state || fallback.state,
+        country: addressFromBody?.country || fallback.country,
+      };
+
+      const required = [
+        address.street,
+        address.streetNumber,
+        address.zipCode,
+        address.neighborhood,
+        address.city,
+        address.state,
+        address.country,
+      ];
+
+      if (required.some((value) => !value)) return null;
+      return { address };
+    };
+
+    const shipping = buildShippingAddress();
+    if (!shipping) {
+      return res.status(400).json({
+        success: false,
+        message: "EndereÃ§o de envio obrigatÃ³rio (shipping.address)",
+      });
+    }
+
     const payload = {
       amount: amountCents,
-      currency: "BRL",
-      paymentMethod: "pix",
+      paymentMethod: "PIX",
       items: [
         {
           title: FIXED_TITLE,
           unitPrice: amountCents,
           quantity: 1,
-          tangible: false,
         },
       ],
       customer: {
         name: customer.name,
         email: customer.email,
-        phone: customer.cellphone,
-        document: {
-          type: documentType,
-          number: customer.taxId,
-        },
+        phone: customer.phone,
+        document: { type: documentType, number: customer.taxId },
       },
+      shipping,
       pix: {
         expiresInDays: 1,
       },
-      postbackUrl: BLACKCAT_POSTBACK_URL,
-      externalRef: "taxa_adesao",
+      postbackUrl: ALLOWPAY_POSTBACK_URL,
       metadata: JSON.stringify({
         source: "popseal",
         cpf: customer.taxId,
         email: customer.email,
       }),
-      utm_source: tracking?.utm?.utm_source || tracking?.utm?.source || tracking?.src || undefined,
-      utm_medium: tracking?.utm?.utm_medium || undefined,
-      utm_campaign: tracking?.utm?.utm_campaign || undefined,
-      utm_content: tracking?.utm?.utm_content || undefined,
-      utm_term: tracking?.utm?.utm_term || undefined,
+      ip: bodyData.ip || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
+      description: bodyData.description || FIXED_TITLE,
     };
 
     const userAgent = bodyData.user_agent || req.headers["user-agent"] || "";
@@ -293,14 +349,15 @@ async function handlePaymentRequest(req, res) {
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "",
     });
 
-    console.log("[PAYMENT] Enviando para Blackcat...");
+    console.log("[PAYMENT] Enviando para AllowPay...");
 
-    const resp = await fetch(`${BASE_URL}/sales/create-sale`, {
+    const authToken = Buffer.from(`${ALLOWPAY_USERNAME}:${ALLOWPAY_PASSWORD}`).toString("base64");
+
+    const resp = await fetch(`${BASE_URL}/transactions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
-        "X-API-Key": BLACKCAT_API_KEY,
+        authorization: `Basic ${authToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -308,7 +365,7 @@ async function handlePaymentRequest(req, res) {
     const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error("[PAYMENT] Erro Blackcat:", resp.status, data);
+      console.error("[PAYMENT] Erro AllowPay:", resp.status, data);
       return res.status(502).json({
         success: false,
         message: data?.error || "Falha ao criar PIX",
@@ -316,44 +373,10 @@ async function handlePaymentRequest(req, res) {
       });
     }
 
-    const txData = Array.isArray(data?.data) ? data.data[0] : data?.data || data;
-    const tx = txData?.transactionId || txData?.id || txData?.transaction_id || txData?.txid;
-    const paymentData = txData?.paymentData || {};
-    const pixText =
-      paymentData?.copyPaste ||
-      paymentData?.qrCode ||
-      txData?.pix_code ||
-      txData?.qr_code ||
-      "";
-    const pixQr =
-      paymentData?.qrCodeBase64 ||
-      paymentData?.qrCode ||
-      txData?.pix_qr_code ||
-      txData?.qr_code_image ||
-      txData?.qr_code ||
-      "";
-    const looksLikeBase64 = (value) =>
-      typeof value === "string" &&
-      value.length > 100 &&
-      /^[A-Za-z0-9+/=\s]+$/.test(value);
-    const normalizeQrUrl = (value) => {
-      if (!value) return value;
-      const withScheme = !value.startsWith("http") && value.includes("/")
-        ? `https://${value}`
-        : value;
-      return withScheme.startsWith("http") ? encodeURI(withScheme) : withScheme;
-    };
-    const pixQrWithPrefix = pixQr
-      ? pixQr.startsWith("data:image")
-        ? pixQr
-        : pixQr.startsWith("http")
-          ? pixQr
-          : pixQr.startsWith("base64,")
-            ? `data:image/png;${pixQr}`
-            : looksLikeBase64(pixQr)
-              ? `data:image/png;base64,${pixQr.trim()}`
-              : normalizeQrUrl(pixQr)
-      : "";
+    const txData = data || {};
+    const tx = txData?.id;
+    const pixText = txData?.pix?.qrcode || "";
+    const pixQrWithPrefix = txData?.pix?.qrcode || "";
 
     if (!tx || !pixText) {
       return res.status(502).json({
@@ -372,14 +395,14 @@ async function handlePaymentRequest(req, res) {
       amount_cents: txData?.amount || amountCents,
       title: FIXED_TITLE,
       transaction_id: String(tx),
-      status: String(txData?.status || "PENDING"),
+      status: String(txData?.status || "waiting_payment"),
     });
 
     const UTMIFY_API_TOKEN = process.env.UTMIFY_API_TOKEN;
     const customerForUtmify = {
       name: customer.name,
       email: customer.email,
-      phone: customer.cellphone || null,
+      phone: customer.phone || null,
       document: customer.taxId || null,
       country: "BR",
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || null,
@@ -409,7 +432,7 @@ async function handlePaymentRequest(req, res) {
       gatewayFeeInCents: 0,
       userCommissionInCents: amountCents,
       paymentMethod: "pix",
-      platform: "Blackcat",
+      platform: "AllowPay",
     });
 
     return res.status(200).json({
@@ -433,3 +456,8 @@ async function handlePaymentRequest(req, res) {
 }
 
 module.exports = handlePaymentRequest;
+
+
+
+
+
