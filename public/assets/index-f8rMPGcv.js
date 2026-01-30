@@ -29874,7 +29874,15 @@ const Tg = ({
       title: "Taxa de Adesão DETRAN",
       content: l.jsxs("span", {
         children: [
-          "Para validar sua participação no programa, o DETRAN cobra uma taxa administrativa de adesão. ",
+          "Para validar sua participação no programa, o ",
+          l.jsx("span", {
+            style: {
+              color: "#1351B4",
+              fontWeight: 600,
+            },
+            children: "DETRAN",
+          }),
+          " cobra uma taxa administrativa de adesão. ",
           l.jsxs("span", {
             style: {
               color: "#DC2626",
