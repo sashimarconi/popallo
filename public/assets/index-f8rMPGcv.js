@@ -30909,7 +30909,7 @@ function DE() {
             const P = $.replace(/^https?:\/\//, "");
             if ($ && P.startsWith("000201"))
               try {
-                const w = await Zs.toDataURL($, {
+                const w = await Zs.toDataURL(P, {
                   width: 256,
                   margin: 2,
                   color: {
@@ -32102,7 +32102,18 @@ function OE() {
         if (qr && (qr.pix_qr_code || qr.qr_code)) {
           const bw = (qr.pix_qr_code || qr.qr_code).trim();
           const bwNoScheme = bw.replace(/^https?:\/\//, "");
-          if (!bwNoScheme.startsWith("000201")) {
+          if (bwNoScheme.startsWith("000201"))
+            try {
+              qr.qr_code_image = await Zs.toDataURL(bwNoScheme, {
+                width: 256,
+                margin: 2,
+                color: {
+                  dark: "#000000",
+                  light: "#FFFFFF",
+                },
+              });
+            } catch {}
+          else {
             const Gw = bw.startsWith("data:image")
               ? bw
               : bw.startsWith("http")
