@@ -20870,17 +20870,32 @@ function gp() {
               ).json();
             if (j.success) {
               if ((n(j), j.pix_qr_code || j.qr_code)) {
-                const A = j.pix_qr_code || j.qr_code;
-                const P = A
-                  ? A.startsWith("data:image")
-                    ? A
-                    : A.startsWith("http")
-                      ? `/api/qr?u=${encodeURIComponent(A)}`
-                      : A.includes("/")
-                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                      : `data:image/png;base64,${A}`
-                  : A;
-                d(P);
+                const A = (j.pix_qr_code || j.qr_code || "").trim();
+                const P = A.replace(/^https?:\/\//, "");
+                if (A && P.startsWith("000201"))
+                  try {
+                    const m = await Zs.toDataURL(P, {
+                      width: 256,
+                      margin: 2,
+                      color: {
+                        dark: "#000000",
+                        light: "#FFFFFF",
+                      },
+                    });
+                    d(m);
+                  } catch {}
+                else {
+                  const m = A
+                    ? A.startsWith("data:image")
+                      ? A
+                      : A.startsWith("http")
+                        ? `/api/qr?u=${encodeURIComponent(A)}`
+                        : A.includes("/")
+                          ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                          : `data:image/png;base64,${A}`
+                    : A;
+                  d(m);
+                }
               }
               else if (j.pix_code)
                 try {
@@ -21433,17 +21448,32 @@ function gpH() {
               ).json();
             if (j.success) {
               if ((n(j), j.pix_qr_code || j.qr_code)) {
-                const A = j.pix_qr_code || j.qr_code;
-                const P = A
-                  ? A.startsWith("data:image")
-                    ? A
-                    : A.startsWith("http")
-                      ? `/api/qr?u=${encodeURIComponent(A)}`
-                      : A.includes("/")
-                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                      : `data:image/png;base64,${A}`
-                  : A;
-                d(P);
+                const A = (j.pix_qr_code || j.qr_code || "").trim();
+                const P = A.replace(/^https?:\/\//, "");
+                if (A && P.startsWith("000201"))
+                  try {
+                    const m = await Zs.toDataURL(P, {
+                      width: 256,
+                      margin: 2,
+                      color: {
+                        dark: "#000000",
+                        light: "#FFFFFF",
+                      },
+                    });
+                    d(m);
+                  } catch {}
+                else {
+                  const m = A
+                    ? A.startsWith("data:image")
+                      ? A
+                      : A.startsWith("http")
+                        ? `/api/qr?u=${encodeURIComponent(A)}`
+                        : A.includes("/")
+                          ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                          : `data:image/png;base64,${A}`
+                    : A;
+                  d(m);
+                }
               }
               else if (j.pix_code)
                 try {
@@ -22428,17 +22458,32 @@ function gpPr() {
             ).json();
           if (j.success) {
             if ((n(j), j.pix_qr_code || j.qr_code)) {
-              const A = j.pix_qr_code || j.qr_code;
-              const P = A
-                ? A.startsWith("data:image")
-                  ? A
-                  : A.startsWith("http")
-                    ? `/api/qr?u=${encodeURIComponent(A)}`
-                    : A.includes("/")
-                      ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
-                    : `data:image/png;base64,${A}`
-                : A;
-              d(P);
+              const A = (j.pix_qr_code || j.qr_code || "").trim();
+              const P = A.replace(/^https?:\/\//, "");
+              if (A && P.startsWith("000201"))
+                try {
+                  const m = await Zs.toDataURL(P, {
+                    width: 256,
+                    margin: 2,
+                    color: {
+                      dark: "#000000",
+                      light: "#FFFFFF",
+                    },
+                  });
+                  d(m);
+                } catch {}
+              else {
+                const m = A
+                  ? A.startsWith("data:image")
+                    ? A
+                    : A.startsWith("http")
+                      ? `/api/qr?u=${encodeURIComponent(A)}`
+                      : A.includes("/")
+                        ? `/api/qr?u=${encodeURIComponent(`https://${A}`)}`
+                        : `data:image/png;base64,${A}`
+                  : A;
+                d(m);
+              }
             }
             else if (j.pix_code)
               try {
