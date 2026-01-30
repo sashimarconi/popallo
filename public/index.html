@@ -1,92 +1,17 @@
-<!DOCTYPE html>
-          // Procura por canvas ou img que contenha QR code
-          const qrElements = document.querySelectorAll(
-            'canvas[style*="background"], img[alt*="qr"], img[alt*="QR"], [data-qrcode], .qr-code'
-          );
 
-          // Também procura por elementos com atributos data que contenham qrcode/pix
-          const allDivs = document.querySelectorAll('div, img, canvas');
-          let foundQR = false;
 
-          for (let el of allDivs) {
-            const html = el.outerHTML || "";
-            const attrs = Array.from(el.attributes || [])
-              .map((a) => a.value)
-              .join(" ");
 
-            // Se encontrar dados de PIX ou QR code no elemento
-            if (
-              html.includes("data:image/png") ||
-              html.includes("qrcode") ||
-              html.includes("pix") ||
-              attrs.includes("qr")
-            ) {
-              foundQR = true;
-              break;
-            }
-          }
-
-          if (foundQR || qrElements.length > 0) {
-            if (alreadyTrackedQR()) {
-              clearInterval(checkQRCode);
-              return;
-            }
-
-            // ✅ Dispara o evento Purchase quando QR code é gerado
-            const value = 64.73; // <-- coloque o valor que você quer atribuir
-            const currency = "BRL";
-
-            if (typeof window.fbq === "function") {
-              // Libera 1 disparo de Purchase por sessão apenas neste momento
-              sessionStorage.setItem(ALLOW_KEY, "1");
-              window.fbq("track", "Purchase", { value, currency });
-              markTrackedQR();
-              console.log("[Meta] Purchase disparado na geração do QR code:", value);
-            } else {
-              console.log("[Meta] fbq não encontrado ao gerar QR code");
-            }
-
-            clearInterval(checkQRCode);
-          }
-        } catch (err) {
-          console.log("[Meta] erro ao monitorar QR code:", err);
-        }
-      }, 500); // Verifica a cada 500ms
-
-      // Para de verificar depois de 30 segundos
-      setTimeout(function () {
-        clearInterval(checkQRCode);
-      }, 30000);
-    }
-
-    // Inicia o monitoramento quando a página carrega
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", monitorQRCodeGeneration);
-    } else {
-      monitorQRCodeGeneration();
-    }
-  })();
-</script>
-
-<!-- End Meta Pixel Code -->
-
-<script
-  src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-  data-utmify-prevent-xcod-sck
-  data-utmify-prevent-subids
-  async
-  defer
-></script>
-    
 
 </head>
 
 
 <body>
+</body>
   <div id="root"></div>
   <!-- UTMify Pixel -->
   <script src="https://cdn.utmify.com.br/pixel.js" async defer></script>
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"930438a9377641318e643fa299f98d7d","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
 </body>
 
 
